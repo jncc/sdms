@@ -10,3 +10,4 @@ License: Open Government License
 Encoding: UTF-8
 LazyData: true
 URL: http://github.com/hutchisonjtw/JNCCsdms
+RoxygenNote: 6.0.1
