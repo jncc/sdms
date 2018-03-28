@@ -10,11 +10,6 @@
 #' @return
 #' @export
 
-
-## Biodiversity Module
-## Function to prepare presence and pseudo-absence data, run a suite of models, evaluate best
-## Originally based on script from BiodiversityMod_v8.R
-
 SDMs <- function (occ = occurrence, #occurence data, spatialpointsdataframe of presence points
                   bckg = background, #background mask from which to generate pseudo-absence points
                   varstack = vars, #Rasterstack of predictor variables
