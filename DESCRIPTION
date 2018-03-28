@@ -1,11 +1,12 @@
 Package: JNCCsdms
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Functions to Generate Species Distribution Models using the JNCC SDM Framework
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Author: Joint Nature Conservation Committee <info@jncc.gov.uk>
+Maintainer: Joint Nature Conservation Committee <info@jncc.gov.uk>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: Open Government License
 Encoding: UTF-8
 LazyData: true
+URL: http://github.com/hutchisonjtw/JNCCsdms
