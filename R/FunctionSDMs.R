@@ -1,4 +1,4 @@
-#' Prepare presence and pseudo-absence data, run selected models and evaluates best model.
+#' Prepare presence and pseudo-absence data, run selected models and evaluate best model.
 #'
 #' This function uses the presence points
 #'
@@ -7,6 +7,8 @@
 #' @param varstack A RasterStack of the environmental parameters to be used as predictor variables for the species ramge.
 #' @param models A character vector of the models to run and evaluate. This should be at least one of \code{"MaxEnt"}, \code{"BioClim"}, \code{"SVM"}, \code{"RF"}, \code{"GLM"}, \code{"GAM"}, \code{"BRT"}. Default is to run all models.
 #' @param n_bg_points The number of pseudo-absence point to attempt to generate. Note that if a very restrictive mask is used the number actually generated may be fewer than that specified. Default is to attempt to generate the same number of pseudo-absences as presences for which there is data on the environmental parameters (this may be fewer than the number of points in \code{occ} if some of these fall in cells that are NA in one or more layers in \code{varstack}.
+#' @return
+#' @export
 
 
 ## Biodiversity Module
@@ -16,7 +18,7 @@
 SDMs <- function (occ = occurrence, #occurence data, spatialpointsdataframe of presence points
                   bckg = background, #background mask from which to generate pseudo-absence points
                   varstack = vars, #Rasterstack of predictor variables
-                  models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT")
+                  models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
                   n_bg_points = nrow(pres_vars)
                   )
   {
@@ -176,7 +178,7 @@ SDMs <- function (occ = occurrence, #occurence data, spatialpointsdataframe of p
   bestmod <- tryCatch(get(best), error=function(err) NA)
   prediction_best <- tryCatch(predict(vars_drop, bestmod, type="response"), error=function(err) Obs2ras(ppts[c("x","y")]))
 
-  #Convert raster output to ff matrix to reduce obect size
+  #Convert raster output to ff matrix to reduce object size
   predict_ff <- ff(as.matrix(prediction_best))
   #Add to list of previous runs
   all_predicts <- append(all_predicts, list(predict_ff) )
