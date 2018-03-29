@@ -12,7 +12,7 @@ randomOcc(presframe, precisionCol = "precision")
 \item{precisionCol}{The column indicating the resolution of the presence point data. This should be given as a grid cell size in metres e.g. for a 1km grid this should be 1000.}
 }
 \value{
-A copy of the input dataframe \code{presframe}, but with new "easting" and "northing" values that place each point randomly within it's grid cell.
+A copy of the input dataframe \code{presframe}, but with new "easting" and "northing" values that place each point randomly within its grid cell.
 }
 \description{
 This function is used to randomise the location of a presence point where the species occurrence data is low resolution. For example, if your species occurrence data is at 1km resolution, but your environmental predictor variables are at 200m resolution, this enables you to randomise where within the 1km cell your species record is placed. The function can handle multiple resolutions within a single dataframe, as long as these are labelled with a precision column.
