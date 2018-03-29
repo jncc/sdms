@@ -6,7 +6,7 @@
 \usage{
 SDMs(occ = occurrence, bckg = background, varstack = vars,
   models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
-  n_bg_points = nrow(pres_vars))
+  n_bg_points = nrow(pres_vars), prop_test_data = 0.25)
 }
 \arguments{
 \item{occ}{A SpatialPointsDataFrame of presence points.}
@@ -18,6 +18,8 @@ SDMs(occ = occurrence, bckg = background, varstack = vars,
 \item{models}{A character vector of the models to run and evaluate. This should be at least one of \code{"MaxEnt"}, \code{"BioClim"}, \code{"SVM"}, \code{"RF"}, \code{"GLM"}, \code{"GAM"}, \code{"BRT"}. Default is to run all models.}
 
 \item{n_bg_points}{The number of pseudo-absence point to attempt to generate. Note that if a very restrictive mask is used the number actually generated may be fewer than that specified. Default is to attempt to generate the same number of pseudo-absences as presences for which there is data on the environmental parameters (this may be fewer than the number of points in \code{occ} if some of these fall in cells that are NA in one or more layers in \code{varstack}.}
+
+\item{prop_test_data}{Numeric, the proportion of data to keep back as testing data for evaluating the models. Default is 25%.}
 }
 \value{
 A list containing the prediction from the best model (as a raster layer showing probability of species occurrence), the best model evaluation and the best model itself.

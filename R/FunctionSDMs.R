@@ -7,6 +7,7 @@
 #' @param varstack A RasterStack of the environmental parameters to be used as predictor variables for the species ramge.
 #' @param models A character vector of the models to run and evaluate. This should be at least one of \code{"MaxEnt"}, \code{"BioClim"}, \code{"SVM"}, \code{"RF"}, \code{"GLM"}, \code{"GAM"}, \code{"BRT"}. Default is to run all models.
 #' @param n_bg_points The number of pseudo-absence point to attempt to generate. Note that if a very restrictive mask is used the number actually generated may be fewer than that specified. Default is to attempt to generate the same number of pseudo-absences as presences for which there is data on the environmental parameters (this may be fewer than the number of points in \code{occ} if some of these fall in cells that are NA in one or more layers in \code{varstack}.
+#' @param prop_test_data Numeric, the proportion of data to keep back as testing data for evaluating the models. Default is 25%.
 #' @return A list containing the prediction from the best model (as a raster layer showing probability of species occurrence), the best model evaluation and the best model itself.
 #' @export
 
@@ -14,7 +15,8 @@ SDMs <- function (occ = occurrence, #occurence data, spatialpointsdataframe of p
                   bckg = background, #background mask from which to generate pseudo-absence points
                   varstack = vars, #Rasterstack of predictor variables
                   models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
-                  n_bg_points = nrow(pres_vars)
+                  n_bg_points = nrow(pres_vars),
+                  prop_test_data = 0.25
                   )
   {
   ##Get background points (from within background mask if it exists, but excluding grids with presence)
