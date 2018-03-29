@@ -19,6 +19,9 @@ SDMs(occ = occurrence, bckg = background, varstack = vars,
 
 \item{n_bg_points}{The number of pseudo-absence point to attempt to generate. Note that if a very restrictive mask is used the number actually generated may be fewer than that specified. Default is to attempt to generate the same number of pseudo-absences as presences for which there is data on the environmental parameters (this may be fewer than the number of points in \code{occ} if some of these fall in cells that are NA in one or more layers in \code{varstack}.}
 }
+\value{
+A list containing the prediction from the best model (as a raster layer showing probability of species occurrence), the best model evaluation and the best model itself.
+}
 \description{
-This function uses the presence points
+This function uses presence points for a species with a background mask to generate pseudo-absences, and then uses these with environmental data layers to generate species distribution models using a range of different model algorithms. The function then selects the best perfoming model and outputs the distribution that that model predicts, an evaluation of the model performance and the model itself.
 }
