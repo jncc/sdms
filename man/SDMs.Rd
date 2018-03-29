@@ -2,7 +2,7 @@
 % Please edit documentation in R/FunctionSDMs.R
 \name{SDMs}
 \alias{SDMs}
-\title{Prepare presence and pseudo-absence data, run selected models and evaluates best model.}
+\title{Prepare presence and pseudo-absence data, run selected models and evaluate best model.}
 \usage{
 SDMs(occ = occurrence, bckg = background, varstack = vars,
   models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
