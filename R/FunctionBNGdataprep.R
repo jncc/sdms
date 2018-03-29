@@ -6,6 +6,7 @@
 #'@param precisionCol The column name of the column in \code{speciesdf} denoting the precision of the species record locations.
 #'@param bngCol The column name of the column in\code{speciesdf} giving the species record location as a BNG grid reference.
 #'@param datafrom Character, one of "NBNgateway" or "NBNatlas", indicating the data source.
+#'@param minyear Numeric, the earliest year from which data should be used. Data older than this will be discarded.
 #'@param mindata The target minimum number of data points to return. If this is specified, the lowest resolution data will be discarded if there are enough higher resolution data points available to reach this target.
 #'@param covarRes The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.
 #'@return A copy of \code{speciesdf} with absence data removed, easting and northing columns generated from BNG grid references and data from Northern Ireland removed.
@@ -15,8 +16,9 @@ bngprep <- function(speciesdf,
                     precisionCol = "precision",
                     bngCol = "gridReference",
                     datafrom = NULL,
+                    minyear,
                     mindata = 5000,
-                    covarRes = covarResm) {
+                    covarRes) {
 
   #Remove absence data
   if (datafrom == "NBNgateway") {

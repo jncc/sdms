@@ -5,7 +5,7 @@
 \title{Prepare data from NBN gateway or atlas for use in species distribution modelling.}
 \usage{
 bngprep(speciesdf, precisionCol = "precision", bngCol = "gridReference",
-  datafrom = NULL, mindata = 5000, covarRes = covarResm)
+  datafrom = NULL, minyear, mindata = 5000, covarRes)
 }
 \arguments{
 \item{speciesdf}{Data frame exported from NBN gateway or NBN atlas with data for a species.}
@@ -15,6 +15,8 @@ bngprep(speciesdf, precisionCol = "precision", bngCol = "gridReference",
 \item{bngCol}{The column name of the column in\code{speciesdf} giving the species record location as a BNG grid reference.}
 
 \item{datafrom}{Character, one of "NBNgateway" or "NBNatlas", indicating the data source.}
+
+\item{minyear}{Numeric, the earliest year from which data should be used. Data older than this will be discarded.}
 
 \item{mindata}{The target minimum number of data points to return. If this is specified, the lowest resolution data will be discarded if there are enough higher resolution data points available to reach this target.}
 
