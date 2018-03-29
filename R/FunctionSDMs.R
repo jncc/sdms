@@ -1,6 +1,6 @@
 #' Prepare presence and pseudo-absence data, run selected models and evaluate best model.
 #'
-#' This function uses the presence points
+#' This function uses presence points for a species with a background mask to generate pseudo-absences, and then uses these with environmental data layers to generate species distribution models using a range of different model algorithms. The function then selects the best perfoming model and outputs the distribution that that model predicts, an evaluation of the model performance and the model itself.
 #'
 #' @param occ A SpatialPointsDataFrame of presence points.
 #' @param bckg A raster showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA.
