@@ -4,7 +4,7 @@
 #'
 #' @param presframe Data frame of presence points. This should include columns titled "easting" and "northing", which should be x and y coordinates in metres (of the centre of the grid cell for gridded data), as well as a column giving the resolution (see \code{prescisionCol} below).
 #' @param precisionCol The column indicating the resolution of the presence point data. This should be given as a grid cell size in metres e.g. for a 1km grid this should be 1000.
-#' @return A copy of the input dataframe \code{presframe}, but with new "easting" and "northing" values that place each point randomly within it's grid cell.
+#' @return A copy of the input dataframe \code{presframe}, but with new "easting" and "northing" values that place each point randomly within its grid cell.
 #' @export
 
 
