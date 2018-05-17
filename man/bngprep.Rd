@@ -4,19 +4,21 @@
 \alias{bngprep}
 \title{Prepare data from NBN gateway or atlas for use in species distribution modelling.}
 \usage{
-bngprep(speciesdf, precisionCol = "precision", bngCol = "gridReference",
-  datafrom = NULL, minyear, mindata = 5000, covarRes)
+bngprep(speciesdf, bngCol, precisionCol = "precision", datafrom = NULL,
+  minyear = 0, maxyear = 0, mindata = 5000, covarRes)
 }
 \arguments{
 \item{speciesdf}{Data frame exported from NBN gateway or NBN atlas with data for a species.}
 
-\item{precisionCol}{The column name of the column in \code{speciesdf} denoting the precision of the species record locations.}
+\item{bngCol}{The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNatlas, this will vary with recorder precision, so you should select the most appropriate for your data, for example "OSGR 1km", "OSGR 2km" or "OSGR 10km".}
 
-\item{bngCol}{The column name of the column in\code{speciesdf} giving the species record location as a BNG grid reference.}
+\item{precisionCol}{The column name of the column in \code{speciesdf} denoting the precision of the species record locations. This only needs to be specified for NBNgateway data as this is generated from the selected \code{bngCol} for data from the NBNatlas.}
 
 \item{datafrom}{Character, one of "NBNgateway" or "NBNatlas", indicating the data source.}
 
-\item{minyear}{Numeric, the earliest year from which data should be used. Data older than this will be discarded.}
+\item{minyear}{Numeric, the earliest year from which data should be selected. Year inclusive, data older than this will be discarded.}
+
+\item{maxyear}{Numeric, the latest year from which data should be used. Year inclusive, data newer than this will be discarded.}
 
 \item{mindata}{The target minimum number of data points to return. If this is specified, the lowest resolution data will be discarded if there are enough higher resolution data points available to reach this target.}
 
@@ -27,4 +29,15 @@ A copy of \code{speciesdf} with absence data removed, easting and northing colum
 }
 \description{
 This function removes absence data (as the models generate their own pseudo-absences), converts British National Grid grid references into easting and northing coordinates and removes data from Northern Ireland to allow modelling using GB data layers.
+}
+\examples{
+#Example using data from NBN Gateway:
+bngprep(speciesdf = sp_gatewaydata, precisionCol = "precision", bngCol = "gridReference", datafrom = "NBNgateway", mindata = 5000, minyear = 2006, maxyear = 2016, covarRes = 300)
+
+#Examples using data from NBN Atlas:
+bngprep(speciesdf = sp_atlasdata, bngCol = "OSGR 1km", datafrom = "NBNatlas", mindata = 5000, minyear = 2007, covarRes = 300)
+
+bngprep(speciesdf = sp_atlasdata, bngCol = "OSGR 2km", datafrom = "NBNatlas", mindata = 5000, minyear = 1990, maxyear = 2010, covarRes = 500)
+
+bngprep(speciesdf = sp_atlasdata, bngCol = "OSGR 10km", datafrom = "NBNatlas", mindata = 5000, maxyear = 2002, covarRes = 300)
 }

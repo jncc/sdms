@@ -6,24 +6,36 @@
 \usage{
 SDMs(occ = occurrence, bckg = background, varstack = vars,
   models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
-  n_bg_points = nrow(pres_vars), prop_test_data = 0.25)
+  n_bg_points = nrow(pres_vars), prop_test_data = 0.25, covarReskm = 300,
+  max_tries = 2, lab = "species", rndm_occ = TRUE)
 }
 \arguments{
 \item{occ}{A SpatialPointsDataFrame of presence points.}
 
 \item{bckg}{A raster showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA.}
 
-\item{varstack}{A RasterStack of the environmental parameters to be used as predictor variables for the species ramge.}
+\item{varstack}{A RasterStack of the environmental parameters to be used as predictor variables for the species range.}
 
 \item{models}{A character vector of the models to run and evaluate. This should be at least one of \code{"MaxEnt"}, \code{"BioClim"}, \code{"SVM"}, \code{"RF"}, \code{"GLM"}, \code{"GAM"}, \code{"BRT"}. Default is to run all models.}
 
 \item{n_bg_points}{The number of pseudo-absence point to attempt to generate. Note that if a very restrictive mask is used the number actually generated may be fewer than that specified. Default is to attempt to generate the same number of pseudo-absences as presences for which there is data on the environmental parameters (this may be fewer than the number of points in \code{occ} if some of these fall in cells that are NA in one or more layers in \code{varstack}.}
 
 \item{prop_test_data}{Numeric, the proportion of data to keep back as testing data for evaluating the models. Default is 25\%.}
+
+\item{covarReskm}{Numeric, the resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.}
+
+\item{max_tries}{Numeric, the numbers of times the model is run.}
+
+\item{lab}{The name of the output files.}
+
+\item{rndm_occ}{Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.}
 }
 \value{
 A list containing the prediction from the best model (as a raster layer showing probability of species occurrence), the best model evaluation and the best model itself.
 }
 \description{
 This function uses presence points for a species with a background mask to generate pseudo-absences, and then uses these with environmental data layers to generate species distribution models using a range of different model algorithms. The function then selects the best perfoming model and outputs the distribution that that model predicts, an evaluation of the model performance and the model itself.
+}
+\examples{
+SDMs(occ = occurrence, bckg = background, varstack = variables, max_tries = 5, lab = "species", rndm_occ = TRUE)
 }

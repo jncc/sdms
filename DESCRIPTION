@@ -11,3 +11,26 @@ Encoding: UTF-8
 LazyData: true
 URL: http://github.com/hutchisonjtw/JNCCsdms
 RoxygenNote: 6.0.1
+Imports: stringi,
+    sp,
+    rgdal,
+    raster,
+    rgeos,
+    gbm,
+    dismo,
+    kernlab,
+    randomForest,
+    beepr,
+    mgcv,
+    readr,
+    maptools,
+    mapdata,
+    ff,
+    ffbase,
+    rnrfa,
+    pryr ,
+    rJava,
+    glmulti
+Suggests: foreach,
+    doParallel,
+    testthat

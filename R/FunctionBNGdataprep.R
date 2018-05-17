@@ -3,48 +3,96 @@
 #' This function removes absence data (as the models generate their own pseudo-absences), converts British National Grid grid references into easting and northing coordinates and removes data from Northern Ireland to allow modelling using GB data layers.
 #'
 #'@param speciesdf Data frame exported from NBN gateway or NBN atlas with data for a species.
-#'@param precisionCol The column name of the column in \code{speciesdf} denoting the precision of the species record locations.
-#'@param bngCol The column name of the column in\code{speciesdf} giving the species record location as a BNG grid reference.
+#'@param bngCol The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNatlas, this will vary with recorder precision, so you should select the most appropriate for your data, for example "OSGR 1km", "OSGR 2km" or "OSGR 10km".
+#'@param precisionCol The column name of the column in \code{speciesdf} denoting the precision of the species record locations. This only needs to be specified for NBNgateway data as this is generated from the selected \code{bngCol} for data from the NBNatlas.
 #'@param datafrom Character, one of "NBNgateway" or "NBNatlas", indicating the data source.
-#'@param minyear Numeric, the earliest year from which data should be used. Data older than this will be discarded.
+#'@param minyear Numeric, the earliest year from which data should be selected. Year inclusive, data older than this will be discarded.
+#'@param maxyear Numeric, the latest year from which data should be used. Year inclusive, data newer than this will be discarded.
 #'@param mindata The target minimum number of data points to return. If this is specified, the lowest resolution data will be discarded if there are enough higher resolution data points available to reach this target.
 #'@param covarRes The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.
 #'@return A copy of \code{speciesdf} with absence data removed, easting and northing columns generated from BNG grid references and data from Northern Ireland removed.
+#'@examples
+#'#Example using data from NBN Gateway:
+#'bngprep(speciesdf = sp_gatewaydata, precisionCol = "precision", bngCol = "gridReference", datafrom = "NBNgateway", mindata = 5000, minyear = 2006, maxyear = 2016, covarRes = 300)
+#'
+#'#Examples using data from NBN Atlas:
+#'bngprep(speciesdf = sp_atlasdata, bngCol = "OSGR 1km", datafrom = "NBNatlas", mindata = 5000, minyear = 2007, covarRes = 300)
+#'
+#'bngprep(speciesdf = sp_atlasdata, bngCol = "OSGR 2km", datafrom = "NBNatlas", mindata = 5000, minyear = 1990, maxyear = 2010, covarRes = 500)
+#'
+#'bngprep(speciesdf = sp_atlasdata, bngCol = "OSGR 10km", datafrom = "NBNatlas", mindata = 5000, maxyear = 2002, covarRes = 300)
 #'@export
 
 bngprep <- function(speciesdf,
+                    bngCol,
                     precisionCol = "precision",
-                    bngCol = "gridReference",
                     datafrom = NULL,
-                    minyear,
+                    minyear = 0,
+                    maxyear = 0,
                     mindata = 5000,
                     covarRes) {
 
-  #Remove absence data
+
+  #---------------------Subset data------------------------------------------------------------#
+
+  ## Data from the NBNgateway
+  #  Inital clean to give presence records in GB
   if (datafrom == "NBNgateway") {
-    speciesdf <- speciesdf[ which(speciesdf$zeroAbundance == "FALSE"),]
+    speciesdf <- speciesdf[ which(speciesdf$zeroAbundance == "FALSE"),] # remove absence data
+    speciesdf <-speciesdf[ which(speciesdf$Projection == "OSGB36"),] # subset to GB only
+    speciesdf$year <- as.numeric( format( as.Date(speciesdf$startDate, format="%d/%m/%Y"), '%Y')) # convert date format and add year column
   }
-  if (datafrom == "NBNatlas") {
-    speciesdf <- speciesdf[speciesdf$`Occurrence status` == "present", ]
-  }
-  # GB only
+
+  # Extract by date - if this has been defined
   if (datafrom == "NBNgateway") {
-    speciesdf <-speciesdf[ which(speciesdf$Projection == "OSGB36"),]
+    if(minyear > 0 & maxyear > 0) {
+      speciesdf <- speciesdf[ which(speciesdf$year >= minyear & speciesdf$year <= maxyear), ] # if minyear & maxyear defined
+    } else if (minyear > 0 & maxyear == 0) {
+      speciesdf <- speciesdf[ which(speciesdf$year >= minyear), ] # if only minyear defined
+    } else if (minyear == 0 & maxyear > 0) {
+      speciesdf <- speciesdf[ which(speciesdf$year <= maxyear), ] # if only maxyear defined
+    } else { speciesdf <- speciesdf}
   }
+
+
+
+  ## Data from the NBNatlas
+  #  Inital clean to give presence records in GB, also subset records by bngCol as varying precisions for Grid References
   if (datafrom == "NBNatlas") {
-    speciesdf <- speciesdf[!speciesdf$`State/Province` == "Northern Ireland",]
+    speciesdf <- speciesdf[speciesdf$`Occurrence status` == "present", ] # remove absence data
+    speciesdf <- speciesdf[!speciesdf$`State/Province` == "Northern Ireland",] # subset to GB only
+    speciesdf <- speciesdf[ grepl("[[:alnum:]]",speciesdf[[bngCol]]),] #select rows with gridref records
+    speciesdf$precision <- unlist(regmatches(bngCol, gregexpr("[[:digit:]]{1,3}km", bngCol))) #add precision
+
+
+    # ensure grid references are consistant
+  if (speciesdf$precision[1] == "1km") {
+    speciesdf <- speciesdf[ grepl("^[a-zA-Z]{2}[0-9]{4}$",speciesdf[[bngCol]]),]
+  } else if (speciesdf$precision[1] == "2km") {
+    speciesdf <- speciesdf[ grepl("^[a-zA-Z]{2}[0-9]{2}[a-zA-Z]{1}$",speciesdf[[bngCol]]),]
+  } else if (speciesdf$precision[1] == "10km") {
+    speciesdf <- speciesdf[ grepl("^[a-zA-Z]{2}[0-9]{2}$",speciesdf[[bngCol]]),]
+  } else {
+    speciesdf <- speciesdf[ grepl("^[a-zA-Z]{2}$",speciesdf[[bngCol]]),]
+    }
+    }
+
+
+
+
+  # Extract by date - if this has been defined
+  if (datafrom == "NBNatlas") {
+    if(minyear > 0 & maxyear > 0) {
+      speciesdf <- speciesdf[ which(speciesdf$Year >= minyear & speciesdf$Year <= maxyear), ] # if minyear & maxyear defined
+    } else if (minyear > 0 & maxyear == 0) {
+      speciesdf <- speciesdf[ which(speciesdf$Year >= minyear), ] # if only minyear defined
+    } else if (minyear == 0 & maxyear > 0) {
+      speciesdf <- speciesdf[ which(speciesdf$Year <= maxyear), ] # if only maxyear defined
+    } else {speciesdf <- speciesdf}
   }
+
 
   #---------------------Run module------------------------------------------------------------#
-
-  #Extract by date - Define
-  #Convert date format and dd year column
-  if (datafrom == "NBNgateway") {
-    speciesdf$year <- as.numeric( format( as.Date(speciesdf$startDate, format="%d/%m/%Y"), '%Y'))
-    speciesdf <- speciesdf[ which(speciesdf$year >= minyear), ]
-  } else {
-    speciesdf <- speciesdf[ which(speciesdf$Year >= minyear), ]
-  }
 
   #Check precision column is numerical, and convert to m
   if(!is.numeric(speciesdf[[precisionCol]]) ) {
@@ -60,7 +108,7 @@ bngprep <- function(speciesdf,
 
   if(nrow(nontetrad) > 0) {
     for (i in 1:nrow(nontetrad) ) {
-      ne <- osg_parse(nontetrad[i,bngCol])
+      ne <- rnrfa::osg_parse(nontetrad[i,bngCol])
       nontetrad$easting[i] <- ne[[1]]
       nontetrad$northing[i] <- ne[[2]]
     }
@@ -69,10 +117,10 @@ bngprep <- function(speciesdf,
 
   #Calculate tetrad grids seperately
   if(nrow(tetrad) > 0){
-    tetrad$At10kcorner <- paste(stri_sub(tetrad[[bngCol]], 1, 4))
-    tetrad$Letter <- paste(stri_sub(tetrad[[bngCol]], 5, -1))
+    tetrad$At10kcorner <- paste(stringi::stri_sub(tetrad[[bngCol]], 1, 4))
+    tetrad$Letter <- paste(stringi::stri_sub(tetrad[[bngCol]], 5, -1))
     for (i in 1:nrow(tetrad) ) {
-      ne <- osg_parse(tetrad$At10kcorner[i])
+      ne <- rnrfa::osg_parse(tetrad$At10kcorner[i])
       tetrad$easting[i] <- ne[[1]]
       tetrad$northing[i] <- ne[[2]]
     }
@@ -85,6 +133,7 @@ bngprep <- function(speciesdf,
     tetrad$northing <- tetrad$northing + tetrad$AddNorth
     tetrad$At10kcorner <- tetrad$AddEast <- tetrad$AddNorth <- tetrad$Letter <- NULL
     speciesdf <- rbind(nontetrad,tetrad)
+
   }
 
   #Remove low resolution data if sufficient data at higher resolution
