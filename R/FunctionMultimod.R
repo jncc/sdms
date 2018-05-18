@@ -20,9 +20,9 @@ Multi_mod <- function (sp_list = sp_list, #unique list of species names
                   bkgd_flder = "BGmasks/", #location of the folder for the background masks
                   max_tries = 2, #number of model runs
                   datafrom = "NBNgateway",
-                  bngCol = "OSGR 2km"
-                  mult_prssr = FALSE #set up multiple processors
-                  vars # predictor variables
+                  bngCol = "OSGR 2km",
+                  mult_prssr = FALSE, #set up multiple processors
+                  vars, # predictor variables
                   rndm_occ = TRUE
 )
 {
@@ -74,11 +74,11 @@ lab <- gsub('([[:punct:]])|\\s+','_',sp)
 
 #read in and prepare species occurrence data
 if (datafrom == "NBNgatway") {
-gateway_dat <- readr::read_delim(file = paste(dat_flder, sep = ""), "\t", escape_double = FALSE, trim_ws = TRUE)
-spdat <- bngprep(speciesdf = gateway_dat, precisionCol = "precision", bngCol = "gridReference", mindata = 5000, minyear = 2007, covarRes = 300)
+  gateway_dat <- readr::read_delim(file = paste(dat_flder, sep = ""), "\t", escape_double = FALSE, trim_ws = TRUE)
+  spdat <- bngprep(speciesdf = gateway_dat, precisionCol = "precision", bngCol  = "gridReference", mindata = 5000, minyear = 2007, covarRes = 300)
 } else if (datafrom == "NBNatlas"){
   atlas_dat<- read.csv(file=dat_flder, header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
-spdat <- bngprep(speciesdf = atlas_dat, datafrom = "NBNatlas", mindata = 5000, minyear = 2007, covarRes = 300)
+  spdat <- bngprep(speciesdf = atlas_dat, datafrom = "NBNatlas", mindata = 5000, minyear = 2007, covarRes = 300)
 }
 #convert to spatial data frame
 sp::coordinates(spdat)<- ~ easting + northing
@@ -87,8 +87,7 @@ sp::coordinates(spdat)<- ~ easting + northing
 if("taxonGroup" %in% colnames(spdat)) {
   taxon <- spdat$taxonGroup[1]
 } else {
-  #manual prompt to insert taxon group
-  taxon <-readline(paste("what taxon group is", sp, " ?"))
+  taxon <-readline(paste("what taxon group is", sp, " ?"))#manual prompt to insert taxon group
 }
 tryCatch(load(file=paste(bkgd_flder, taxon, sep="")), error=function(err) NA)
 if(exists("mask1km")){
@@ -158,7 +157,7 @@ beepr::beep()
 
 }
 }
-
+}
 
 
 
