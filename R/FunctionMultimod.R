@@ -117,6 +117,7 @@ if(exists("mask1km")){
 
 ##run SDM function
 final_out <- SDMs(occ = spdat, varstack = vars, models = models, prop_test_data = prop_test_data, covarReskm = covarRes, max_tries = max_tries, lab = sp, rndm_occ = rndm_occ)
+message(paste(sp," modelling completed."))
 ptm <- proc.time()
 beepr::beep()
 
