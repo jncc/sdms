@@ -4,10 +4,20 @@
 #'
 #'@param sp_list List of unique species names which you wish to model.
 #'@param out_flder The location of the output folder for your models.
-#'@param dat_flder The location of the folder containing your species occurrence data.
+#'@param dat_flder The location of the folder containing your species occurrence data, as data frames exported from NBN gateway or NBN atlas with files containing data for a single species.
+#'@param bkgd_flder The location of the folder containing your background masks. These should be raster files showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA.
+#'@param vars A RasterStack of the environmental parameters to be used as predictor variables for the species range.
 #'@param max_tries The number of times the number is run.
 #'@param datafrom Whether it is data from the "NBNgateway" or "NBNatlas".
+#'@param minyear Numeric, the earliest year from which data should be selected. Year inclusive, data older than this will be discarded.
+#'@param maxyear Numeric, the latest year from which data should be used. Year inclusive, data newer than this will be discarded.
+#'@param mindata The target minimum number of data points to return. If this is specified, the lowest resolution data will be discarded if there are enough higher resolution data points available to reach this target.
+#'@param covarRes The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.
+#'@param models A character vector of the models to run and evaluate. This should be at least one of \code{"MaxEnt"}, \code{"BioClim"}, \code{"SVM"}, \code{"RF"}, \code{"GLM"}, \code{"GAM"}, \code{"BRT"}. Default is to run all models.
+#'@param prop_test_data Numeric, the proportion of data to keep back as testing data for evaluating the models. Default is 25\%.
+#'@param bngCol The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNatlas, this will vary with recorder precision, so you should select the most appropriate for your data, for example "OSGR 1km", "OSGR 2km" or "OSGR 10km".
 #'@param mult_prssr Set up a parallel backend to use multiple processors. As a default this is turned off. Need to ensure the suggested packages have been loaded in order to run this.
+#'@param rndm_occ Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.
 #'@return A copy
 #'@examples
 
@@ -15,14 +25,20 @@
 
 
 Multi_mod <- function (sp_list = sp_list, #unique list of species names
-                  out_flder = "Output/", #output folder for models
-                  dat_flder = "Input/",
+                  out_flder = "Outputs/", #output folder for models
+                  dat_flder = "Inputs/",
                   bkgd_flder = "BGmasks/", #location of the folder for the background masks
-                  max_tries = 2, #number of model runs
-                  datafrom = "NBNgateway",
-                  bngCol = "OSGR 2km",
-                  mult_prssr = FALSE, #set up multiple processors
                   vars, # predictor variables
+                  max_tries = 1, #number of model runs
+                  datafrom = "NBNgatweay",
+                  minyear = 0,
+                  maxyear = 0,
+                  mindata = 5000,
+                  covarRes = 300,
+                  models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
+                  prop_test_data =  0.25,
+                  bngCol = "gridReference",
+                  mult_prssr = FALSE, #set up multiple processors
                   rndm_occ = TRUE
 )
 {
@@ -40,17 +56,15 @@ for (i in 1:length(sp_list)){
       & file.exists(paste(out_flder, sp, max_tries, ".grd", sep = ""))
       | file.exists(paste(out_flder, sp, max_tries, ".tif", sep = ""))
   ) {
-    alreadyDone <- list(alreadyDone, sp)
-  }
-  if (file.exists(paste(out_flder, lab, max_tries, ".csv", sep = ""))
+    alreadyDone <- append(alreadyDone, sp)
+  }  else if (file.exists(paste(out_flder, lab, max_tries, ".csv", sep = ""))
       & file.exists(paste(out_flder, lab, max_tries, ".grd", sep = ""))
       | file.exists(paste(out_flder, lab, max_tries, ".tif", sep = ""))
   ) {
-    alreadyDone <- list(alreadyDone, sp)
+    alreadyDone <- append(alreadyDone, sp)
   }
 }
 
-alreadyDone <- unlist(alreadyDone)
 sp_list <- sp_list[!sp_list %in% alreadyDone] #remove alreadyDone species from sp_list
 
 
@@ -74,11 +88,11 @@ lab <- gsub('([[:punct:]])|\\s+','_',sp)
 
 #read in and prepare species occurrence data
 if (datafrom == "NBNgatway") {
-  gateway_dat <- readr::read_delim(file = paste(dat_flder, sep = ""), "\t", escape_double = FALSE, trim_ws = TRUE)
-  spdat <- bngprep(speciesdf = gateway_dat, precisionCol = "precision", bngCol  = "gridReference", mindata = 5000, minyear = 2007, covarRes = 300)
+  gateway_dat <- readr::read_delim(file = paste(dat_flder, sp,".txt", sep = ""), "\t", escape_double = FALSE, trim_ws = TRUE)
+  spdat <- bngprep(speciesdf = gateway_dat, precisionCol = "precision", bngCol  = bngCol, mindata = mindata, minyear = minyear, maxyear = maxyear, covarRes = coverRes)
 } else if (datafrom == "NBNatlas"){
-  atlas_dat<- read.csv(file=dat_flder, header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
-  spdat <- bngprep(speciesdf = atlas_dat, datafrom = "NBNatlas", mindata = 5000, minyear = 2007, covarRes = 300)
+  atlas_dat<- read.csv(file=paste(dat_flder, sp, ".csv", sep = ""), header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
+  spdat <- bngprep(speciesdf = atlas_dat, datafrom = datafrom, mindata = mindata, minyear = minyear, maxyear = maxyear, covarRes = covarRes, bngCol = bngCol)
 }
 #convert to spatial data frame
 sp::coordinates(spdat)<- ~ easting + northing
@@ -102,7 +116,7 @@ if(exists("mask1km")){
 
 
 ##run SDM function
-final_out <- SDMs(occ = spdat, varstack = vars, lab = sp, rndm_occ = rndm_occ)
+final_out <- SDMs(occ = spdat, varstack = vars, models = models, prop_test_data = prop_test_data, covarReskm = covarRes, max_tries = max_tries, lab = sp, rndm_occ = rndm_occ)
 ptm <- proc.time()
 beepr::beep()
 
@@ -118,11 +132,11 @@ foreach(i = 1:length(sp_list), .packages = packlist) %dopar% {    #use if using 
 
   #read in and prepare species occurrence data
   if (datafrom == "NBNgatway") {
-    gateway_dat <- readr::read_delim(file = paste(dat_flder, sep = ""), "\t", escape_double = FALSE, trim_ws = TRUE)
-    spdat <- bngprep(speciesdf = gateway_dat, precisionCol = "precision", bngCol = "gridReference", mindata = 5000, minyear = 2007, covarRes = 300)
+    gateway_dat <- readr::read_delim(file = paste(dat_flder, sp,".txt", sep = ""), "\t", escape_double = FALSE, trim_ws = TRUE)
+    spdat <- bngprep(speciesdf = gateway_dat, precisionCol = "precision", bngCol  = bngCol, mindata = mindata, minyear = minyear, maxyear = maxyear, covarRes = coverRes)
   } else if (datafrom == "NBNatlas"){
-    atlas_dat<- read.csv(file=dat_flder, header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
-    spdat <- bngprep(speciesdf = atlas_dat, datafrom = "NBNatlas", mindata = 5000, minyear = 2007, covarRes = 300)
+    atlas_dat<- read.csv(file=paste(dat_flder, sp, ".csv", sep = ""), header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
+    spdat <- bngprep(speciesdf = atlas_dat, datafrom = datafrom, mindata = mindata, minyear = minyear, maxyear = maxyear, covarRes = covarRes, bngCol = bngCol)
   }
   #convert to spatial data frame
   sp::coordinates(spdat)<- ~ easting + northing
@@ -131,8 +145,7 @@ foreach(i = 1:length(sp_list), .packages = packlist) %dopar% {    #use if using 
   if("taxonGroup" %in% colnames(spdat)) {
     taxon <- spdat$taxonGroup[1]
   } else {
-    #manual prompt to insert taxon group
-    taxon <-readline(paste("what taxon group is", sp, " ?"))
+    taxon <-readline(paste("what taxon group is", sp, " ?")) #manual prompt to insert taxon group
   }
   tryCatch(load(file=paste(bkgd_flder, taxon, sep="")), error=function(err) NA)
   if(exists("mask1km")){
@@ -147,7 +160,7 @@ foreach(i = 1:length(sp_list), .packages = packlist) %dopar% {    #use if using 
 
 
   ##run SDM function
-  final_out <- SDMs(occ = spdat, varstack = vars, lab = sp, rndm_occ = rndm_occ)
+  final_out <- SDMs(occ = spdat, varstack = vars, models = models, prop_test_data = prop_test_data, covarReskm = covarRes, max_tries = max_tries, lab = sp, rndm_occ = rndm_occ)
   ptm <- proc.time()
 
 #stop cluster if parrallel processing
