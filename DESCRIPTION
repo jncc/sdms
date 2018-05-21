@@ -6,7 +6,7 @@ Author: Joint Nature Conservation Committee <info@jncc.gov.uk>
 Maintainer: Joint Nature Conservation Committee <info@jncc.gov.uk>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: Open Government License
+License: Open Government License v3.0
 Encoding: UTF-8
 LazyData: true
 URL: http://github.com/hutchisonjtw/JNCCsdms
