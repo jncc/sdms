@@ -23,24 +23,31 @@
 #'bngprep(speciesdf = sp_atlasdata, bngCol = 'OSGR 10km', datafrom = 'NBNatlas', mindata = 5000, maxyear = 2002, covarRes = 300)
 #'@export
 
-bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = NULL, 
+bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = "Na",
     minyear = 0, maxyear = 0, mindata = 5000, covarRes) {
-    
-    
+
+
     #---------------------Subset data------------------------------------------------------------#
-    
+    ### incorrect input errors
+    try(if (maxyear!= 0 & maxyear < minyear) stop("minimum year limit is greater than maximum year"))
+    try(if (datafrom != "NBNatlas" & datafrom != "NBNgateway") warning("datafrom not specified as NBNatlas or NBNgateway.
+                                                                       Function will only carry out generation of easting and
+                                                                       northing and remove low resolution data" ))
+    try(if (datafrom != "NBNatlas" & grepl("[[:alnum:]]", bngCol) != TRUE ) stop("Unaccepted bngCol specified." ))
+
+
     ## Data from the NBNgateway Inital clean to give presence records in GB
     if (datafrom == "NBNgateway") {
         speciesdf <- speciesdf[which(speciesdf$zeroAbundance == "FALSE"), ]  # remove absence data
         speciesdf <- speciesdf[which(speciesdf$Projection == "OSGB36"), ]  # subset to GB only
-        speciesdf$year <- as.numeric(format(as.Date(speciesdf$startDate, format = "%d/%m/%Y"), 
+        speciesdf$year <- as.numeric(format(as.Date(speciesdf$startDate, format = "%d/%m/%Y"),
             "%Y"))  # convert date format and add year column
     }
-    
+
     # Extract by date - if this has been defined
     if (datafrom == "NBNgateway") {
         if (minyear > 0 & maxyear > 0) {
-            speciesdf <- speciesdf[which(speciesdf$year >= minyear & speciesdf$year <= 
+            speciesdf <- speciesdf[which(speciesdf$year >= minyear & speciesdf$year <=
                 maxyear), ]  # if minyear & maxyear defined
         } else if (minyear > 0 & maxyear == 0) {
             speciesdf <- speciesdf[which(speciesdf$year >= minyear), ]  # if only minyear defined
@@ -50,41 +57,41 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = NU
             speciesdf <- speciesdf
         }
     }
-    
-    
-    
+
+
+
     ## Data from the NBNatlas Inital clean to give presence records in GB, also subset
     ## records by bngCol as varying precisions for Grid References
     if (datafrom == "NBNatlas") {
         speciesdf <- speciesdf[speciesdf$`Occurrence status` == "present", ]  # remove absence data
         speciesdf <- speciesdf[!speciesdf$`State/Province` == "Northern Ireland", ]  # subset to GB only
         speciesdf <- speciesdf[grepl("[[:alnum:]]", speciesdf[[bngCol]]), ]  #select rows with gridref records
-        speciesdf$precision <- unlist(regmatches(bngCol, gregexpr("[[:digit:]]{1,3}km", 
+        speciesdf$precision <- unlist(regmatches(bngCol, gregexpr("[[:digit:]]{1,3}km",
             bngCol)))  #add precision
-        
-        
+
+
         # ensure grid references are consistant
         if (speciesdf$precision[1] == "1km") {
-            speciesdf <- speciesdf[grepl("^[a-zA-Z]{2}[0-9]{4}$", speciesdf[[bngCol]]), 
+            speciesdf <- speciesdf[grepl("^[a-zA-Z]{2}[0-9]{4}$", speciesdf[[bngCol]]),
                 ]
         } else if (speciesdf$precision[1] == "2km") {
-            speciesdf <- speciesdf[grepl("^[a-zA-Z]{2}[0-9]{2}[a-zA-Z]{1}$", speciesdf[[bngCol]]), 
+            speciesdf <- speciesdf[grepl("^[a-zA-Z]{2}[0-9]{2}[a-zA-Z]{1}$", speciesdf[[bngCol]]),
                 ]
         } else if (speciesdf$precision[1] == "10km") {
-            speciesdf <- speciesdf[grepl("^[a-zA-Z]{2}[0-9]{2}$", speciesdf[[bngCol]]), 
+            speciesdf <- speciesdf[grepl("^[a-zA-Z]{2}[0-9]{2}$", speciesdf[[bngCol]]),
                 ]
         } else {
             speciesdf <- speciesdf[grepl("^[a-zA-Z]{2}$", speciesdf[[bngCol]]), ]
         }
     }
-    
-    
-    
-    
+
+
+
+
     # Extract by date - if this has been defined
     if (datafrom == "NBNatlas") {
         if (minyear > 0 & maxyear > 0) {
-            speciesdf <- speciesdf[which(speciesdf$Year >= minyear & speciesdf$Year <= 
+            speciesdf <- speciesdf[which(speciesdf$Year >= minyear & speciesdf$Year <=
                 maxyear), ]  # if minyear & maxyear defined
         } else if (minyear > 0 & maxyear == 0) {
             speciesdf <- speciesdf[which(speciesdf$Year >= minyear), ]  # if only minyear defined
@@ -94,23 +101,23 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = NU
             speciesdf <- speciesdf
         }
     }
-    
-    
+
+
     #---------------------Run module------------------------------------------------------------#
-    
+
     # Check precision column is numerical, and convert to m
     if (!is.numeric(speciesdf[[precisionCol]])) {
         speciesdf$res <- sub("[^[:alpha:]]+", "", speciesdf[[precisionCol]])
         speciesdf[[precisionCol]] <- as.numeric(gsub("([0-9]+).*$", "\\1", speciesdf[[precisionCol]]))
-        speciesdf[[precisionCol]] <- ifelse(speciesdf$res == "m", speciesdf[[precisionCol]], 
+        speciesdf[[precisionCol]] <- ifelse(speciesdf$res == "m", speciesdf[[precisionCol]],
             speciesdf[[precisionCol]] * 1000)
         speciesdf$res <- NULL
     }
-    
+
     # Split between normal grid refs and 'tetrad' (2km) grids
     nontetrad <- speciesdf[which(!speciesdf[[precisionCol]] == 2000), ]
     tetrad <- speciesdf[which(speciesdf[[precisionCol]] == 2000), ]
-    
+
     if (nrow(nontetrad) > 0) {
         for (i in 1:nrow(nontetrad)) {
             ne <- rnrfa::osg_parse(nontetrad[i, bngCol])
@@ -119,7 +126,7 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = NU
         }
     }
     speciesdf <- nontetrad
-    
+
     # Calculate tetrad grids seperately
     if (nrow(tetrad) > 0) {
         tetrad$At10kcorner <- paste(stringi::stri_sub(tetrad[[bngCol]], 1, 4))
@@ -129,13 +136,13 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = NU
             tetrad$easting[i] <- ne[[1]]
             tetrad$northing[i] <- ne[[2]]
         }
-        Tetrad <- c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", 
+        Tetrad <- c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
             "N", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
-        AddEast <- c(1000, 1000, 1000, 1000, 1000, 3000, 3000, 3000, 3000, 3000, 5000, 
-            5000, 5000, 5000, 5000, 7000, 7000, 7000, 7000, 7000, 9000, 9000, 9000, 
+        AddEast <- c(1000, 1000, 1000, 1000, 1000, 3000, 3000, 3000, 3000, 3000, 5000,
+            5000, 5000, 5000, 5000, 7000, 7000, 7000, 7000, 7000, 9000, 9000, 9000,
             9000, 9000)
-        AddNorth <- c(1000, 3000, 5000, 7000, 9000, 1000, 3000, 5000, 7000, 9000, 1000, 
-            3000, 5000, 7000, 9000, 1000, 3000, 5000, 7000, 9000, 1000, 3000, 5000, 
+        AddNorth <- c(1000, 3000, 5000, 7000, 9000, 1000, 3000, 5000, 7000, 9000, 1000,
+            3000, 5000, 7000, 9000, 1000, 3000, 5000, 7000, 9000, 1000, 3000, 5000,
             7000, 9000)
         AddTetrad <- data.frame(Tetrad, AddEast, AddNorth)
         tetrad <- merge(tetrad, AddTetrad, by.x = "Letter", by.y = "Tetrad", all.x = T)
@@ -143,20 +150,20 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = NU
         tetrad$northing <- tetrad$northing + tetrad$AddNorth
         tetrad$At10kcorner <- tetrad$AddEast <- tetrad$AddNorth <- tetrad$Letter <- NULL
         speciesdf <- rbind(nontetrad, tetrad)
-        
+
     }
-    
+
     # Remove low resolution data if sufficient data at higher resolution If a minimum
     # number of data points has been supplied
     if (!is.na(mindata)) {
         rescount <- table(speciesdf[[precisionCol]])
         for (j in sort(as.numeric(names(rescount)), decreasing = TRUE)) {
             # sort data by precision, with lowest resolution first
-            if (j == covarRes) 
+            if (j == covarRes)
                 {
                   break
                 }  #No point refining data to a higher resolution than analysis resolution
-            if (sum(rescount[!names(rescount) == as.character(j)], na.rm = TRUE) > 
+            if (sum(rescount[!names(rescount) == as.character(j)], na.rm = TRUE) >
                 mindata) {
                 # If the sum of data excluding lowest resolution is greater than the minimum data
                 # set,
@@ -167,6 +174,6 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = NU
             }
         }
     }
-    
+
     return(speciesdf)
 }
