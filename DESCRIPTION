@@ -29,7 +29,8 @@ Imports: stringi,
     rnrfa,
     pryr ,
     rJava,
-    glmulti
+    glmulti,
+    utils
 Suggests: foreach,
     doParallel,
     testthat
