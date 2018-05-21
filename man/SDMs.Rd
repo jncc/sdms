@@ -16,7 +16,7 @@ SDMs(occ = occurrence, bckg = background, varstack = vars,
 
 \item{varstack}{A RasterStack of the environmental parameters to be used as predictor variables for the species range.}
 
-\item{models}{A character vector of the models to run and evaluate. This should be at least one of \code{"MaxEnt"}, \code{"BioClim"}, \code{"SVM"}, \code{"RF"}, \code{"GLM"}, \code{"GAM"}, \code{"BRT"}. Default is to run all models.}
+\item{models}{A character vector of the models to run and evaluate. This should be at least one of \code{'MaxEnt'}, \code{'BioClim'}, \code{'SVM'}, \code{'RF'}, \code{'GLM'}, \code{'GAM'}, \code{'BRT'}. Default is to run all models.}
 
 \item{n_bg_points}{The number of pseudo-absence point to attempt to generate. Note that if a very restrictive mask is used the number actually generated may be fewer than that specified. Default is to attempt to generate the same number of pseudo-absences as presences for which there is data on the environmental parameters (this may be fewer than the number of points in \code{occ} if some of these fall in cells that are NA in one or more layers in \code{varstack}.}
 
@@ -37,5 +37,5 @@ A list containing the prediction from the best model (as a raster layer showing 
 This function uses presence points for a species with a background mask to generate pseudo-absences, and then uses these with environmental data layers to generate species distribution models using a range of different model algorithms. The function then selects the best perfoming model and outputs the distribution that that model predicts, an evaluation of the model performance and the model itself.
 }
 \examples{
-SDMs(occ = occurrence, bckg = background, varstack = variables, max_tries = 5, lab = "species", rndm_occ = TRUE)
+SDMs(occ = occurrence, bckg = background, varstack = variables, max_tries = 5, lab = 'species', rndm_occ = TRUE)
 }

@@ -24,7 +24,7 @@ Multi_mod(sp_list = sp_list, out_flder = "Outputs/",
 
 \item{max_tries}{The number of times the number is run.}
 
-\item{datafrom}{Whether it is data from the "NBNgateway" or "NBNatlas".}
+\item{datafrom}{Whether it is data from the 'NBNgateway' or 'NBNatlas'.}
 
 \item{minyear}{Numeric, the earliest year from which data should be selected. Year inclusive, data older than this will be discarded.}
 
@@ -34,11 +34,11 @@ Multi_mod(sp_list = sp_list, out_flder = "Outputs/",
 
 \item{covarRes}{The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.}
 
-\item{models}{A character vector of the models to run and evaluate. This should be at least one of \code{"MaxEnt"}, \code{"BioClim"}, \code{"SVM"}, \code{"RF"}, \code{"GLM"}, \code{"GAM"}, \code{"BRT"}. Default is to run all models.}
+\item{models}{A character vector of the models to run and evaluate. This should be at least one of \code{'MaxEnt'}, \code{'BioClim'}, \code{'SVM'}, \code{'RF'}, \code{'GLM'}, \code{'GAM'}, \code{'BRT'}. Default is to run all models.}
 
 \item{prop_test_data}{Numeric, the proportion of data to keep back as testing data for evaluating the models. Default is 25\%.}
 
-\item{bngCol}{The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNatlas, this will vary with recorder precision, so you should select the most appropriate for your data, for example "OSGR 1km", "OSGR 2km" or "OSGR 10km".}
+\item{bngCol}{The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNatlas, this will vary with recorder precision, so you should select the most appropriate for your data, for example 'OSGR 1km', 'OSGR 2km' or 'OSGR 10km'.}
 
 \item{mult_prssr}{Set up a parallel backend to use multiple processors. As a default this is turned off. Need to ensure the suggested packages have been loaded in order to run this.}
 

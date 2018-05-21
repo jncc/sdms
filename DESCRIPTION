@@ -4,8 +4,7 @@ Title: Functions to Generate Species Distribution Models using the JNCC SDM Fram
 Version: 0.1.0
 Author: Joint Nature Conservation Committee <info@jncc.gov.uk>
 Maintainer: Joint Nature Conservation Committee <info@jncc.gov.uk>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: This package provides several functions for species distribution modelling using a suite of models on your data and returning the best model based on AUC. The functions provide assistance both with single species modelling and with multi-species modelling running through a list of species. The package also facilitates in the randomisation of placements of pseudo-absences and the locations of presence points where these are at lower-resolution than environmental predictor datasets, as well as the preparing of data specifically from NBN Atlas and NBN Gateway resources. 
 License: Open Government License v3.0
 Encoding: UTF-8
 LazyData: true
