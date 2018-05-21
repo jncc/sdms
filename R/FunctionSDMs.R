@@ -101,9 +101,9 @@ SDMs <- function(occ = occurrence, bckg = background, varstack = vars, models = 
             vars_drop <- varstack
         }
         varfactors <- names(combo_vars[, 3:(ncol(combo_vars) - 1)])
-        
+
         #---------------------Define models and evaluate using test data---------------------------------------------------#
-        
+
         # Define models and evaluate using test data Evaluate does not work on some models
         # (notably some GAMs) as output is array, not matrix. eval function is a reduced
         # version of dismo::evaluate which calculates auc for array outputs , x, tr
@@ -193,9 +193,8 @@ SDMs <- function(occ = occurrence, bckg = background, varstack = vars, models = 
 
         # GLM - regression presence-absence (attempts glm selectionfirst, but if too many
         # predictors does full model glm)
-        library ("glmulti")
         if ("GLM" %in% models) {
-            glm_multi <- tryCatch(do.call("glmulti", list(y = "Presence", xr = varfactors,
+            glm_multi <- tryCatch(do.call(glmulti::glmulti, list(y = "Presence", xr = varfactors,
                 family = "binomial", data = combo_train[, 3:ncol(combo_train)], na.action = stats::na.omit,
                 level = 1, method = "g", confsetsize = 1, deltaB = 0, conseq = 1, maxit = 200,
                 report = FALSE, plotty = FALSE)), error = function(err) NA)
