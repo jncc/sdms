@@ -16,10 +16,10 @@ test_that("function returns dataframe of presence only records", {
 
 })
 
-#test_that("maxyear smaller than minyear warning", {
+test_that("maxyear smaller than minyear warning", {
 
-#  expect_error(bngprep(speciesdf = sp_gatewaydata, bngCol = "gridReference", datafrom = "NBNgateway", #minyear = 2007, maxyear = 2000, covarRes = 300),"minimum year limit is greater than maximum year")
-#})
+  expect_error(bngprep(speciesdf = sp_gatewaydata, bngCol = "gridReference", datafrom = "NBNgateway", minyear = 2007, maxyear = 2000, covarRes = 300),"minimum year limit is greater than maximum year")
+})
 
 
 #-----------------------------------------#
@@ -83,13 +83,14 @@ test_that("easting and northing fields added and complete", {
 test_that("bngCol is supplied for NBNatlas data and is a valid column", {
 
   expect_error(bngprep(speciesdf = sp_atlasdata, datafrom= "NBNatlas"),'argument \"bngCol\" is missing, with no default')
-  expect_error(bngprep(speciesdf = sp_atlasdata, datafrom= "NBNatlas", bngCol = "OSGR"),"Unaccepted bngCol specified.")
+ expect_error(bngprep(speciesdf = sp_atlasdata, datafrom= "NBNatlas", bngCol = "OSGR"),"Unaccepted bngCol specified.")
 
 })
 
-test_that("Prescol", {
+test_that("PrecionCol error generated for atlas data, but function still runs", {
 
-
+expect_message(out <- bngprep(speciesdf = sp_atlasdata, datafrom= "NBNatlas", bngCol = "OSGR 1km", precisionCol = "testpres"),"unnecessary argument - do not specify precisionCol for data from NBNatlas")
+expect_is(out, "data.frame")
 
 })
 

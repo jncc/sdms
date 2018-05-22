@@ -29,12 +29,16 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = "N
 
     #---------------------Subset data------------------------------------------------------------#
     ### incorrect input errors
-    try(if (maxyear!= 0 & maxyear < minyear) stop("minimum year limit is greater than maximum year"))
+    if (maxyear!= 0 & maxyear < minyear) stop("minimum year limit is greater than maximum year")
     try(if (datafrom != "NBNatlas" & datafrom != "NBNgateway") warning("datafrom not specified as NBNatlas or NBNgateway.
                                                                        Function will only carry out generation of easting and
                                                                        northing and remove low resolution data" ))
-    try(if (datafrom == "NBNatlas" & grepl("[[:digit:]]", bngCol) != TRUE ) stop("Unaccepted bngCol specified." ))
+    if (datafrom == "NBNatlas" & grepl("[[:digit:]]", bngCol) != TRUE ) stop("Unaccepted bngCol specified." )
 
+    if (datafrom == "NBNatlas" & precisionCol != "precision") {
+      precisionCol <- "precision"
+      message("unnecessary argument - do not specify precisionCol for data from NBNatlas")
+    }
 
     ## Data from the NBNgateway Inital clean to give presence records in GB
     if (datafrom == "NBNgateway") {
