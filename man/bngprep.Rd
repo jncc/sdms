@@ -4,8 +4,8 @@
 \alias{bngprep}
 \title{Prepare data from NBN gateway or atlas for use in species distribution modelling.}
 \usage{
-bngprep(speciesdf, bngCol, precisionCol = "precision", datafrom = NULL,
-  minyear = 0, maxyear = 0, mindata = 5000, covarRes)
+bngprep(speciesdf, bngCol, precisionCol = "precision", datafrom = "Na",
+  minyear = 0, maxyear = 0, mindata = 5000, covarRes = 300)
 }
 \arguments{
 \item{speciesdf}{Data frame exported from NBN gateway or NBN atlas with data for a species.}
