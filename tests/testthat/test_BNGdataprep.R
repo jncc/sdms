@@ -2,13 +2,15 @@
 #  Becky Trippier 21/05/2018
 #### ----------------------
 
-
+load("D:/Github/sdms/R/sysdata.rda")
 
 context("BNGdataprep - general")
 
-test_that("function returns dataframe of presence only records", {
-  gatspdat <- bngprep(speciesdf = sp_gatewaydata, bngCol = "gridReference", datafrom =
+gatspdat <- bngprep(speciesdf = sp_gatewaydata, bngCol = "gridReference", datafrom =
                         "NBNgateway", minyear = 2007, maxyear = 2014, covarRes = 300)
+
+test_that("function returns dataframe of presence only records", {
+
   expect_is(gatspdat, "data.frame")
   expect_false(unique(gatspdat$zeroAbundance))
 
@@ -25,8 +27,7 @@ test_that("function returns dataframe of presence only records", {
 context("BNGdataprep - Gateway Example")
 
 test_that("function returns dataframe of presence only records", {
-  gatspdat <- bngprep(speciesdf = sp_gatewaydata, bngCol = "gridReference", datafrom =
-                        "NBNgateway", minyear = 2007, maxyear = 2014, covarRes = 300)
+
   expect_is(gatspdat, "data.frame")
   expect_false(unique(gatspdat$zeroAbundance))
 
@@ -53,18 +54,18 @@ test_that("easting and northing fields added and complete", {
 
 #-----------------------------------------#
 context("BNGdataprep - Atlas Example")
+atspdat <- bngprep(speciesdf = sp_atlasdata,  bngCol = "OSGR 1km", datafrom = "NBNatlas", mindata = 5000, minyear = 2007, maxyear = 2014, covarRes = 300)
 
 test_that("function returns dataframe of presence only records", {
-  atspdat <- bngprep(speciesdf = sp_atlasdata,  bngCol = "OSGR 1km", datafrom = "NBNatlas", mindata = 5000, minyear = 2007, maxyear = 2014, covarRes = 300)
   expect_is(atspdat, "data.frame")
   expect_true(unique(atspdat$`Occurrence status`)== "present")
 
 })
 
 test_that("Subsetting dates returns within the correct range of years", {
-  expect_true(min(atspdat$Year) == 2007)
-  expect_true(max(atspdat$Year) == 2014)
-  expect_false(unique(is.na(atspdat$Year)))
+  expect_true(min(atspdat$year) == 2007)
+  expect_true(max(atspdat$year) == 2014)
+  expect_false(unique(is.na(atspdat$year)))
 
 })
 
@@ -81,7 +82,8 @@ test_that("easting and northing fields added and complete", {
 
 test_that("bngCol is supplied for NBNatlas data and is a valid column", {
 
-
+  expect_error(bngprep(speciesdf = sp_atlasdata, datafrom= "NBNatlas"),'argument \"bngCol\" is missing, with no default')
+  expect_error(bngprep(speciesdf = sp_atlasdata, datafrom= "NBNatlas", bngCol = "OSGR"),"Unaccepted bngCol specified.")
 
 })
 
