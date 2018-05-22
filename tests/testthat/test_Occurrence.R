@@ -24,5 +24,5 @@ test_that("function returns dataframe with different easting and northing", {
   before <- before[order(before$NBNObservationID),]
   after <- after[order(after$NBNObservationID),]
   expect_false(unique(before$easting == after$easting))
-  expect_false(unique(before$northing == after$nothing))
+  expect_false(unique(before$northing == after$northing))
 })
