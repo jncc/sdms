@@ -1,4 +1,4 @@
-## Tests to check the functionality of the Package functions BNGdataprep and Occurrence
+## Tests to check the functionality of the Package functions BNGdataprep
 #  Becky Trippier 21/05/2018
 #### ----------------------
 
@@ -22,11 +22,15 @@ test_that("maxyear smaller than minyear warning", {
 })
 
 test_that("where no datafrom specified, function will still run", {
-  sp_atlasdata$pres <- 1000
-  expect_warning(spdat <- bngprep(speciesdf = sp_atlasdata,  bngCol = "OSGR 1km", mindata = 5000, minyear = 2007, maxyear = 2014, covarRes = 300), "datafrom not specified as NBNatlas or NBNgateway." )
+  sp_gatewaydata$pres <- 1000
+  sp_gatewaydata$year <- as.numeric(format(as.Date(sp_gatewaydata$startDate,
+                                              format = "%d/%m/%Y"), "%Y"))
+  expect_warning(spdat <- bngprep(speciesdf = sp_gatewaydata,  bngCol = "gridReference", mindata = 5000, minyear = 2007, maxyear = 2014, covarRes = 300), "datafrom not specified as NBNatlas or NBNgateway." )
   expect_is(spdat, "data.frame")
 })
 #-----------------------------------------#
+gatspdat <- bngprep(speciesdf = sp_gatewaydata, bngCol = "gridReference", datafrom =
+                      "NBNgateway", minyear = 2007, maxyear = 2014, covarRes = 300)
 
 context("BNGdataprep - Gateway Example")
 
