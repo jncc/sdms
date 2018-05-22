@@ -12,7 +12,8 @@
 #' @export
 
 
-randomOcc <- function(presframe, precisionCol = "precision", lowestResm = 10000, covarResm = 1000) {
+randomOcc <- function(presframe, precisionCol = "precision", lowestResm = 10000, 
+    covarResm = 1000) {
     
     occurrence <- data.frame()
     
@@ -20,7 +21,8 @@ randomOcc <- function(presframe, precisionCol = "precision", lowestResm = 10000,
     # Check precision column is numerical, and convert to m
     if (!is.numeric(presframe[[precisionCol]])) {
         presframe$res <- sub("[^[:alpha:]]+", "", presframe[[precisionCol]])
-        presframe[[precisionCol]] <- as.numeric(gsub("([0-9]+).*$", "\\1", presframe[[precisionCol]]))
+        presframe[[precisionCol]] <- as.numeric(gsub("([0-9]+).*$", "\\1", 
+            presframe[[precisionCol]]))
         presframe[[precisionCol]] <- ifelse(presframe$res == "m", presframe[[precisionCol]], 
             presframe[[precisionCol]] * 1000)
         presframe$res <- NULL
@@ -29,14 +31,14 @@ randomOcc <- function(presframe, precisionCol = "precision", lowestResm = 10000,
     
     
     for (j in unique(sort(presframe[[precisionCol]], decreasing = TRUE))) {
-        # Run per capture resolution grid size If capture resolution is within lowest
-        # resolution to use limit
+        # Run per capture resolution grid size If capture resolution is within
+        # lowest resolution to use limit
         if (j %in% presframe[[precisionCol]] & lowestResm >= j) {
             df <- presframe[which(presframe[[precisionCol]] == j), ]  # Subset all data at same capture resolution
             if (j > covarResm) {
                 movemax <- 0.5 * j  #Half of capture resolution grid cell size
-                df$easting <- df$easting + round(stats::runif(length(df$easting), -movemax, 
-                  movemax))  #Move east/west by up to half capture grid cell size
+                df$easting <- df$easting + round(stats::runif(length(df$easting), 
+                  -movemax, movemax))  #Move east/west by up to half capture grid cell size
                 df$northing <- df$northing + round(stats::runif(length(df$northing), 
                   -movemax, movemax))  #Move north/south by up to half capture grid cell size
                 occurrence <- rbind(occurrence, df)

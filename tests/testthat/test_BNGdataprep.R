@@ -21,7 +21,11 @@ test_that("maxyear smaller than minyear warning", {
   expect_error(bngprep(speciesdf = sp_gatewaydata, bngCol = "gridReference", datafrom = "NBNgateway", minyear = 2007, maxyear = 2000, covarRes = 300),"minimum year limit is greater than maximum year")
 })
 
-
+test_that("where no datafrom specified, function will still run", {
+  sp_atlasdata$pres <- 1000
+  expect_warning(spdat <- bngprep(speciesdf = sp_atlasdata,  bngCol = "OSGR 1km", mindata = 5000, minyear = 2007, maxyear = 2014, covarRes = 300), "datafrom not specified as NBNatlas or NBNgateway." )
+  expect_is(spdat, "data.frame")
+})
 #-----------------------------------------#
 
 context("BNGdataprep - Gateway Example")

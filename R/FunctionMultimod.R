@@ -24,79 +24,87 @@
 #'@export
 
 
-Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "Inputs/",
-    bkgd_flder = "BGmasks/", vars, max_tries = 1, datafrom = "NBNgatweay", minyear = 0,
-    maxyear = 0, mindata = 5000, covarRes = 300, models = c("MaxEnt", "BioClim", "SVM",
-        "RF", "GLM", "GAM", "BRT"), prop_test_data = 0.25, bngCol = "gridReference",
-    mult_prssr = FALSE, rndm_occ = TRUE) {
-
-
-
+Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "Inputs/", 
+    bkgd_flder = "BGmasks/", vars, max_tries = 1, datafrom = "NBNgatweay", 
+    minyear = 0, maxyear = 0, mindata = 5000, covarRes = 300, models = c("MaxEnt", 
+        "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"), prop_test_data = 0.25, 
+    bngCol = "gridReference", mult_prssr = FALSE, rndm_occ = TRUE) {
+    
+    
+    
     alreadyDone <- NULL
-
-    ## ------------------ setting up done list -----------------------## If output files
-    ## already exist, add to alreadyDone list
+    
+    ## ------------------ setting up done list -----------------------## If
+    ## output files already exist, add to alreadyDone list
     for (i in 1:length(sp_list)) {
         sp <- sp_list[i]
         lab <- gsub("([[:punct:]])|\\s+", "_", sp)
-        if (file.exists(paste(out_flder, sp, max_tries, ".csv", sep = "")) & file.exists(paste(out_flder,
-            sp, max_tries, ".grd", sep = "")) | file.exists(paste(out_flder, sp, max_tries,
-            ".tif", sep = ""))) {
+        if (file.exists(paste(out_flder, sp, max_tries, ".csv", sep = "")) & 
+            file.exists(paste(out_flder, sp, max_tries, ".grd", sep = "")) | 
+            file.exists(paste(out_flder, sp, max_tries, ".tif", sep = ""))) {
             alreadyDone <- append(alreadyDone, sp)
-        } else if (file.exists(paste(out_flder, lab, max_tries, ".csv", sep = "")) &
-            file.exists(paste(out_flder, lab, max_tries, ".grd", sep = "")) | file.exists(paste(out_flder,
-            lab, max_tries, ".tif", sep = ""))) {
+        } else if (file.exists(paste(out_flder, lab, max_tries, ".csv", 
+            sep = "")) & file.exists(paste(out_flder, lab, max_tries, 
+            ".grd", sep = "")) | file.exists(paste(out_flder, lab, max_tries, 
+            ".tif", sep = ""))) {
             alreadyDone <- append(alreadyDone, sp)
         }
     }
-
+    
     sp_list <- sp_list[!sp_list %in% alreadyDone]  #remove alreadyDone species from sp_list
-
-
-    ## ------------------ setting up multiple processors -----------------------##
-
+    
+    
+    ## ------------------ setting up multiple processors
+    ## -----------------------##
+    
     ## setup parallel backend to use multiple processors if required
     if (mult_prssr == TRUE) {
         cl <- parallel::makeCluster(detectCores() - 1)  #not to overload your computer
         doParallel::registerDoParallel(cl)
         parallel::clusterEvalQ(cl, .libPaths("D:/Rpackages"))  #guide each to libpath, as above (line 13)
-        packlist <- c("stringi", "rgdal", "raster", "rgeos", "dismo", "kernlab", "dismo",
-            "kernlab", "randomForest", "glmulti", "beepr", "mgcv", "readr", "maptools",
-            "mapdata", "ff", "ffbase", "rnrfa", "pryr")
+        packlist <- c("stringi", "rgdal", "raster", "rgeos", "dismo", 
+            "kernlab", "dismo", "kernlab", "randomForest", "glmulti", 
+            "beepr", "mgcv", "readr", "maptools", "mapdata", "ff", "ffbase", 
+            "rnrfa", "pryr")
     }
     ptm <- proc.time()
-
-
-    ## ------------------ run models (non-parallel processing) -----------------------##
+    
+    
+    ## ------------------ run models (non-parallel processing)
+    ## -----------------------##
     if (mult_prssr == FALSE) {
         for (i in 1:length(sp_list)) {
             # use if running one at a time
             sp <- sp_list[i]
             lab <- gsub("([[:punct:]])|\\s+", "_", sp)
-
+            
             # read in and prepare species occurrence data
             if (datafrom == "NBNgatway") {
-                gateway_dat <- readr::read_delim(file = paste(dat_flder, sp, ".txt",
-                  sep = ""), "\t", escape_double = FALSE, trim_ws = TRUE)
-                spdat <- bngprep(speciesdf = gateway_dat, precisionCol = "precision",
-                  bngCol = bngCol, mindata = mindata, minyear = minyear, maxyear = maxyear,
-                  covarRes = coverRes)
+                gateway_dat <- readr::read_delim(file = paste(dat_flder, 
+                  sp, ".txt", sep = ""), "\t", escape_double = FALSE, 
+                  trim_ws = TRUE)
+                spdat <- bngprep(speciesdf = gateway_dat, precisionCol = "precision", 
+                  bngCol = bngCol, mindata = mindata, minyear = minyear, 
+                  maxyear = maxyear, covarRes = coverRes)
             } else if (datafrom == "NBNatlas") {
-                atlas_dat <- utils::read.csv(file = paste(dat_flder, sp, ".csv", sep = ""),
-                  header = TRUE, sep = ",", check.names = FALSE, strip.white = TRUE)
-                spdat <- bngprep(speciesdf = atlas_dat, datafrom = datafrom, mindata = mindata,
-                  minyear = minyear, maxyear = maxyear, covarRes = covarRes, bngCol = bngCol)
+                atlas_dat <- utils::read.csv(file = paste(dat_flder, sp, 
+                  ".csv", sep = ""), header = TRUE, sep = ",", check.names = FALSE, 
+                  strip.white = TRUE)
+                spdat <- bngprep(speciesdf = atlas_dat, datafrom = datafrom, 
+                  mindata = mindata, minyear = minyear, maxyear = maxyear, 
+                  covarRes = covarRes, bngCol = bngCol)
             }
             # convert to spatial data frame
             sp::coordinates(spdat) <- ~easting + northing
-
+            
             # Create background
             if ("taxonGroup" %in% colnames(spdat)) {
                 taxon <- spdat$taxonGroup[1]
             } else {
                 taxon <- readline(paste("what taxon group is", sp, " ?"))  #manual prompt to insert taxon group
             }
-            tryCatch(load(file = paste(bkgd_flder, taxon, sep = "")), error = function(err) NA)
+            tryCatch(load(file = paste(bkgd_flder, taxon, sep = "")), 
+                error = function(err) NA)
             if (exists("mask1km")) {
                 background <- mask1km
                 rm(mask1km)
@@ -106,49 +114,55 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
                 background <- r
                 rm(r)
             }
-
-
+            
+            
             ## run SDM function
-            final_out <- SDMs(occ = spdat, varstack = vars, models = models, prop_test_data = prop_test_data,
-                covarReskm = covarRes, max_tries = max_tries, lab = sp, rndm_occ = rndm_occ)
+            final_out <- SDMs(occ = spdat, varstack = vars, models = models, 
+                prop_test_data = prop_test_data, covarReskm = covarRes, 
+                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ)
             message(paste(sp, " modelling completed."))
             ptm <- proc.time()
             beepr::beep()
-
+            
         }
     }
-
-    ## ------------------ run models (parallel processing) -----------------------##
+    
+    ## ------------------ run models (parallel processing)
+    ## -----------------------##
     if (mult_prssr == TRUE) {
         foreach(i = 1:length(sp_list), .packages = packlist) %dopar% {
             # use if using parallel cores
-
+            
             sp <- sp_list[i]
             lab <- gsub("([[:punct:]])|\\s+", "_", sp)
-
+            
             # read in and prepare species occurrence data
             if (datafrom == "NBNgatway") {
-                gateway_dat <- readr::read_delim(file = paste(dat_flder, sp, ".txt",
-                  sep = ""), "\t", escape_double = FALSE, trim_ws = TRUE)
-                spdat <- bngprep(speciesdf = gateway_dat, precisionCol = "precision",
-                  bngCol = bngCol, mindata = mindata, minyear = minyear, maxyear = maxyear,
-                  covarRes = coverRes)
+                gateway_dat <- readr::read_delim(file = paste(dat_flder, 
+                  sp, ".txt", sep = ""), "\t", escape_double = FALSE, 
+                  trim_ws = TRUE)
+                spdat <- bngprep(speciesdf = gateway_dat, precisionCol = "precision", 
+                  bngCol = bngCol, mindata = mindata, minyear = minyear, 
+                  maxyear = maxyear, covarRes = coverRes)
             } else if (datafrom == "NBNatlas") {
-                atlas_dat <- utils::read.csv(file = paste(dat_flder, sp, ".csv", sep = ""),
-                  header = TRUE, sep = ",", check.names = FALSE, strip.white = TRUE)
-                spdat <- bngprep(speciesdf = atlas_dat, datafrom = datafrom, mindata = mindata,
-                  minyear = minyear, maxyear = maxyear, covarRes = covarRes, bngCol = bngCol)
+                atlas_dat <- utils::read.csv(file = paste(dat_flder, sp, 
+                  ".csv", sep = ""), header = TRUE, sep = ",", check.names = FALSE, 
+                  strip.white = TRUE)
+                spdat <- bngprep(speciesdf = atlas_dat, datafrom = datafrom, 
+                  mindata = mindata, minyear = minyear, maxyear = maxyear, 
+                  covarRes = covarRes, bngCol = bngCol)
             }
             # convert to spatial data frame
             sp::coordinates(spdat) <- ~easting + northing
-
+            
             # Create background
             if ("taxonGroup" %in% colnames(spdat)) {
                 taxon <- spdat$taxonGroup[1]
             } else {
                 taxon <- readline(paste("what taxon group is", sp, " ?"))  #manual prompt to insert taxon group
             }
-            tryCatch(load(file = paste(bkgd_flder, taxon, sep = "")), error = function(err) NA)
+            tryCatch(load(file = paste(bkgd_flder, taxon, sep = "")), 
+                error = function(err) NA)
             if (exists("mask1km")) {
                 background <- mask1km
                 rm(mask1km)
@@ -158,18 +172,19 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
                 background <- r
                 rm(r)
             }
-
-
+            
+            
             ## run SDM function
-            final_out <- SDMs(occ = spdat, varstack = vars, models = models, prop_test_data = prop_test_data,
-                covarReskm = covarRes, max_tries = max_tries, lab = sp, rndm_occ = rndm_occ)
+            final_out <- SDMs(occ = spdat, varstack = vars, models = models, 
+                prop_test_data = prop_test_data, covarReskm = covarRes, 
+                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ)
             ptm <- proc.time()
-
+            
             # stop cluster if parrallel processing
             parallel::stopCluster(cl)
             proc.time() - ptm
             beepr::beep()
-
+            
         }
     }
 }
