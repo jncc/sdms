@@ -31,7 +31,8 @@ Imports: stringi,
     pryr ,
     rJava,
     glmulti,
-    utils
+    utils,
+    dplyr
 Suggests: foreach,
     doParallel,
     testthat
