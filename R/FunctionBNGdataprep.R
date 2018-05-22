@@ -44,22 +44,6 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = "N
             "%Y"))  # convert date format and add year column
     }
 
-    # Extract by date - if this has been defined
-    if (datafrom == "NBNgateway") {
-        if (minyear > 0 & maxyear > 0) {
-            speciesdf <- speciesdf[which(speciesdf$year >= minyear & speciesdf$year <=
-                maxyear), ]  # if minyear & maxyear defined
-        } else if (minyear > 0 & maxyear == 0) {
-            speciesdf <- speciesdf[which(speciesdf$year >= minyear), ]  # if only minyear defined
-        } else if (minyear == 0 & maxyear > 0) {
-            speciesdf <- speciesdf[which(speciesdf$year <= maxyear), ]  # if only maxyear defined
-        } else {
-            speciesdf <- speciesdf
-        }
-    }
-
-
-
     ## Data from the NBNatlas Inital clean to give presence records in GB, also subset
     ## records by bngCol as varying precisions for Grid References
     if (datafrom == "NBNatlas") {
@@ -68,6 +52,7 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = "N
         speciesdf <- speciesdf[grepl("[[:alnum:]]", speciesdf[[bngCol]]), ]  #select rows with gridref records
         speciesdf$precision <- unlist(regmatches(bngCol, gregexpr("[[:digit:]]{1,3}km",
             bngCol)))  #add precision
+        names(speciesdf)[names(speciesdf) == "Year"] <- "year"
 
 
         # ensure grid references are consistant
@@ -85,22 +70,18 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = "N
         }
     }
 
-
-
-
-    # Extract by date - if this has been defined
-    if (datafrom == "NBNatlas") {
-        if (minyear > 0 & maxyear > 0) {
-            speciesdf <- speciesdf[which(speciesdf$Year >= minyear & speciesdf$Year <=
+   # Extract by date - if this has been defined
+    if (minyear > 0 & maxyear > 0) {
+        speciesdf <- speciesdf[which(speciesdf$year >= minyear & speciesdf$year <=
                 maxyear), ]  # if minyear & maxyear defined
-        } else if (minyear > 0 & maxyear == 0) {
-            speciesdf <- speciesdf[which(speciesdf$Year >= minyear), ]  # if only minyear defined
-        } else if (minyear == 0 & maxyear > 0) {
-            speciesdf <- speciesdf[which(speciesdf$Year <= maxyear), ]  # if only maxyear defined
-        } else {
-            speciesdf <- speciesdf
-        }
-    }
+      } else if (minyear > 0 & maxyear == 0) {
+        speciesdf <- speciesdf[which(speciesdf$year >= minyear), ]  # if only minyear defined
+      } else if (minyear == 0 & maxyear > 0) {
+        speciesdf <- speciesdf[which(speciesdf$year <= maxyear), ]  # if only maxyear defined
+      } else {
+        speciesdf <- speciesdf
+      }
+
 
 
     #---------------------Run module------------------------------------------------------------#
