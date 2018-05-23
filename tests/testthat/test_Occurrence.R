@@ -19,7 +19,7 @@ test_that("function returns dataframe with easting and northing", {
 
 test_that("function returns dataframe with different easting and northing", {
 
-  before <- dplyr::sample_n(occ, 10)
+  before <- dplyr::sample_n(occ, 5)
   after <- subset(occurrence, NBNObservationID %in% before$NBNObservationID)
   before <- before[order(before$NBNObservationID),]
   after <- after[order(after$NBNObservationID),]
