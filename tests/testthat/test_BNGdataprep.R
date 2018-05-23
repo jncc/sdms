@@ -96,3 +96,6 @@ expect_is(out, "data.frame")
 
 })
 
+test_that("Duplicated field names are handled", {
+  expect_true(unique(names(sp_atlasdata)[44:45] != names(atspdat)[44:45]))
+})

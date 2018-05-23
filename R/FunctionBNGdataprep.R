@@ -26,6 +26,10 @@ bngprep <- function(speciesdf, bngCol = "OSGR", precisionCol = "precision", data
 
     #---------------------Subset data------------------------------------------------------------#
     ### incorrect input errors
+   if (anyDuplicated(names(speciesdf))>0){
+     names(speciesdf) <- make.unique(names(speciesdf))
+     message("Duplicated field names made unique.")
+   }
     if (maxyear != 0 & maxyear < minyear)
         stop("minimum year limit is greater than maximum year")
     if (datafrom != "NBNatlas" & datafrom != "NBNgateway")
