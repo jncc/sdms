@@ -62,7 +62,7 @@ test_that("easting and northing fields added and complete", {
 
 #-----------------------------------------#
 context("BNGdataprep - Atlas Example")
-atspdat <- bngprep(speciesdf = sp_atlasdata,  bngCol = "OSGR 1km", datafrom = "NBNatlas", mindata = 5000, minyear = 2007, maxyear = 2014, covarRes = 300)
+atspdat <- bngprep(speciesdf = sp_atlasdata,  bngCol = "OSGR", datafrom = "NBNatlas", mindata = 5000, minyear = 2007, maxyear = 2014, covarRes = 300)
 
 test_that("function returns dataframe of presence only records", {
   expect_is(atspdat, "data.frame")
@@ -88,12 +88,6 @@ test_that("easting and northing fields added and complete", {
 
 })
 
-test_that("bngCol is supplied for NBNatlas data and is a valid column", {
-
-  expect_error(bngprep(speciesdf = sp_atlasdata, datafrom= "NBNatlas"),'argument \"bngCol\" is missing, with no default')
- expect_error(bngprep(speciesdf = sp_atlasdata, datafrom= "NBNatlas", bngCol = "OSGR"),"Unaccepted bngCol specified.")
-
-})
 
 test_that("PrecionCol error generated for atlas data, but function still runs", {
 

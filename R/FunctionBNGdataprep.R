@@ -3,7 +3,7 @@
 #' This function removes absence data (as the models generate their own pseudo-absences), converts British National Grid grid references into easting and northing coordinates and removes data from Northern Ireland to allow modelling using GB data layers.
 #'
 #'@param speciesdf Data frame exported from NBN gateway or NBN atlas with data for a species.
-#'@param bngCol The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNatlas, this will vary with recorder precision, so you should select the most appropriate for your data, for example 'OSGR 1km', 'OSGR 2km' or 'OSGR 10km'.
+#'@param bngCol The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNgateway this is the 'gridReference' field. The default is set to the 'OSGR' field which is used for data from NBNatlas and is also used to generate the location precision.
 #'@param precisionCol The column name of the column in \code{speciesdf} denoting the precision of the species record locations. This only needs to be specified for NBNgateway data as this is generated from the selected \code{bngCol} for data from the NBNatlas.
 #'@param datafrom Character, one of 'NBNgateway' or 'NBNatlas', indicating the data source.
 #'@param minyear Numeric, the earliest year from which data should be selected. Year inclusive, data older than this will be discarded.
@@ -16,14 +16,11 @@
 #'bngprep(speciesdf = sp_gatewaydata, precisionCol = 'precision', bngCol = 'gridReference', datafrom = 'NBNgateway', mindata = 5000, minyear = 2006, maxyear = 2016, covarRes = 300)
 #'
 #'#Examples using data from NBN Atlas:
-#'bngprep(speciesdf = sp_atlasdata, bngCol = 'OSGR 1km', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
-#'
-#'bngprep(speciesdf = sp_atlasdata, bngCol = 'OSGR 2km', datafrom = 'NBNatlas', mindata = 5000, minyear = 1990, maxyear = 2010, covarRes = 500)
-#'
-#'bngprep(speciesdf = sp_atlasdata, bngCol = 'OSGR 10km', datafrom = 'NBNatlas', mindata = 5000, maxyear = 2002, covarRes = 300)
+#'bngprep(speciesdf = sp_atlasdata, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
+
 #'@export
 
-bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = "Na",
+bngprep <- function(speciesdf, bngCol = "OSGR", precisionCol = "precision", datafrom = "Na",
     minyear = 0, maxyear = 0, mindata = 5000, covarRes = 300) {
 
 
@@ -33,9 +30,6 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = "N
         stop("minimum year limit is greater than maximum year")
     if (datafrom != "NBNatlas" & datafrom != "NBNgateway")
         warning("datafrom not specified as NBNatlas or NBNgateway.")
-    if (datafrom == "NBNatlas" & grepl("[[:digit:]]", bngCol) != TRUE)
-        stop("Unaccepted bngCol specified.")
-
     if (datafrom == "NBNatlas" & precisionCol != "precision") {
         precisionCol <- "precision"
         message("unnecessary argument - do not specify precisionCol for data from NBNatlas")
@@ -61,25 +55,15 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = "N
             ]  # subset to GB only
         speciesdf <- speciesdf[grepl("[[:alnum:]]", speciesdf[[bngCol]]),
             ]  #select rows with gridref records
-        speciesdf$precision <- unlist(regmatches(bngCol, gregexpr("[[:digit:]]{1,3}km",
-            bngCol)))  #add precision
         names(speciesdf)[names(speciesdf) == "Year"] <- "year"
-
+        speciesdf$precision <- NA  #add precision
 
         # ensure grid references are consistant
-        if (speciesdf$precision[1] == "1km") {
-            speciesdf <- speciesdf[grepl("^[a-zA-Z]{2}[0-9]{4}$", speciesdf[[bngCol]]),
-                ]
-        } else if (speciesdf$precision[1] == "2km") {
-            speciesdf <- speciesdf[grepl("^[a-zA-Z]{2}[0-9]{2}[a-zA-Z]{1}$",
-                speciesdf[[bngCol]]), ]
-        } else if (speciesdf$precision[1] == "10km") {
-            speciesdf <- speciesdf[grepl("^[a-zA-Z]{2}[0-9]{2}$", speciesdf[[bngCol]]),
-                ]
-        } else {
-            speciesdf <- speciesdf[grepl("^[a-zA-Z]{2}$", speciesdf[[bngCol]]),
-                ]
-        }
+    speciesdf$precision <- ifelse(grepl("^[a-zA-Z]{2}[0-9]{4}$",speciesdf[[bngCol]]),'1km','NA')
+    speciesdf$precision[grepl("^[a-zA-Z]{2}[0-9]{2}[a-zA-Z]{1}$",speciesdf[[bngCol]])] <- '2km'
+    speciesdf$precision[grepl("^[a-zA-Z]{2}[0-9]{2}$",speciesdf[[bngCol]])] <- '10km'
+    speciesdf$precision[grepl("^[a-zA-Z]{2}$",speciesdf[[bngCol]])] <- '100km'
+    speciesdf$precision[grepl("^[a-zA-Z]{2}[0-9]{6}$",speciesdf[[bngCol]])] <- '100m'
     }
 
     # Extract by date - if this has been defined
@@ -124,6 +108,7 @@ bngprep <- function(speciesdf, bngCol, precisionCol = "precision", datafrom = "N
         }
     }
     speciesdf <- nontetrad
+
 
     # Calculate tetrad grids seperately
     if (nrow(tetrad) > 0) {
