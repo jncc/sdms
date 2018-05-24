@@ -2,12 +2,11 @@
 #  Becky Trippier 22/05/2018
 #### ----------------------
 
-load("D:/Github/sdms/R/sysdata.rda")
-
 context("Occurrence tests - general")
+ng_data<- read.csv(file="Inputs/Notonecta_glauca.csv", header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
 
-occ <- bngprep(speciesdf = sp_gatewaydata, bngCol = "gridReference", datafrom =
-                      "NBNgateway", minyear = 2007, maxyear = 2014, covarRes = 300)
+occ <- bngprep(speciesdf = ng_data, bngCol = "OSGR", datafrom =
+                      "NBNatlas", minyear = 2007, maxyear = 2014, covarRes = 300)
 occurrence <- raster::as.data.frame(occ)
 occurrence <- randomOcc(presframe = occurrence, precisionCol = "precision", covarResm = 300)
 

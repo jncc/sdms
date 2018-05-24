@@ -12,7 +12,8 @@ sp::coordinates(gatspdat)<- ~ easting + northing
 #raster stack of predictor variables - vars
 load(file = "D:/Becky docs/SDMs/varsLCM2015")
 
-
+######
+SDMs(occ = gatspdat, max_tries = 1, models = "BioClim", lab = "test", bckg = gatbackground, rndm_occ = TRUE, varstack = bio)
 
 test_that("model input error when these are incorrectly defined", {
   expect_error(SDMs(occ = gatspdat, max_tries = 1, models = "Bioclim", lab = "test", bckg = gatbackground, rndm_occ = TRUE), "Model specification contains an unexpected value, please check model names input. Operation terminated.")

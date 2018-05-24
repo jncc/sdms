@@ -6,6 +6,7 @@ load("D:/Github/sdms/R/sysdata.rda")
 
 context("BNGdataprep - general")
 
+
 gatspdat <- bngprep(speciesdf = sp_gatewaydata, bngCol = "gridReference", datafrom =
                         "NBNgateway", minyear = 2007, maxyear = 2014, covarRes = 300)
 
@@ -62,25 +63,26 @@ test_that("easting and northing fields added and complete", {
 
 #-----------------------------------------#
 context("BNGdataprep - Atlas Example")
-atspdat <- bngprep(speciesdf = sp_atlasdata,  bngCol = "OSGR", datafrom = "NBNatlas", mindata = 5000, minyear = 2007, maxyear = 2014, covarRes = 300)
+ng_data<- read.csv(file="Inputs/Notonecta_glauca.csv", header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
+ngspdat <- bngprep(speciesdf = ng_data,  bngCol = "OSGR", datafrom = "NBNatlas", mindata = 5000, minyear = 2007, maxyear = 2014, covarRes = 300)
 
 test_that("function returns dataframe of presence only records", {
-  expect_is(atspdat, "data.frame")
-  expect_true(unique(atspdat$`Occurrence status`)== "present")
+  expect_is(ngspdat, "data.frame")
+  expect_true(unique(ngspdat$`Occurrence status`)== "present")
 
 })
 
 test_that("Subsetting dates returns within the correct range of years", {
-  expect_true(min(atspdat$year) == 2007)
-  expect_true(max(atspdat$year) == 2014)
-  expect_false(unique(is.na(atspdat$year)))
+  expect_true(min(ngspdat$year) == 2007)
+  expect_true(max(ngspdat$year) == 2014)
+  expect_false(unique(is.na(ngspdat$year)))
 
 })
 
 test_that("easting and northing fields added and complete", {
 
-  x<- atspdat$easting
-  y<- atspdat$northing
+  x<- ngspdat$easting
+  y<- ngspdat$northing
   expect_true(is.numeric(x))
   expect_true(is.numeric(y))
   expect_false(unique(is.na(x)))
@@ -91,11 +93,11 @@ test_that("easting and northing fields added and complete", {
 
 test_that("PrecionCol error generated for atlas data, but function still runs", {
 
-expect_message(out <- bngprep(speciesdf = sp_atlasdata, datafrom= "NBNatlas", bngCol = "OSGR 1km", precisionCol = "testpres"),"unnecessary argument - do not specify precisionCol for data from NBNatlas")
+expect_message(out <- bngprep(speciesdf = ng_data, datafrom= "NBNatlas", bngCol = "OSGR", precisionCol = "testpres"),"unnecessary argument - do not specify precisionCol for data from NBNatlas")
 expect_is(out, "data.frame")
 
 })
 
 test_that("Duplicated field names are handled", {
-  expect_true(unique(names(sp_atlasdata)[44:45] != names(atspdat)[44:45]))
+  expect_true(unique(names(ng_data)[44:45] != names(ngspdat)[44:45]))
 })
