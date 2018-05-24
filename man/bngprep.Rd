@@ -4,13 +4,14 @@
 \alias{bngprep}
 \title{Prepare data from NBN gateway or atlas for use in species distribution modelling.}
 \usage{
-bngprep(speciesdf, bngCol, precisionCol = "precision", datafrom = "Na",
-  minyear = 0, maxyear = 0, mindata = 5000, covarRes = 300)
+bngprep(speciesdf, bngCol = "OSGR", precisionCol = "precision",
+  datafrom = "Na", minyear = 0, maxyear = 0, mindata = 5000,
+  covarRes = 300)
 }
 \arguments{
 \item{speciesdf}{Data frame exported from NBN gateway or NBN atlas with data for a species.}
 
-\item{bngCol}{The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNatlas, this will vary with recorder precision, so you should select the most appropriate for your data, for example 'OSGR 1km', 'OSGR 2km' or 'OSGR 10km'.}
+\item{bngCol}{The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNgateway this is the 'gridReference' field. The default is set to the 'OSGR' field which is used for data from NBNatlas and is also used to generate the location precision.}
 
 \item{precisionCol}{The column name of the column in \code{speciesdf} denoting the precision of the species record locations. This only needs to be specified for NBNgateway data as this is generated from the selected \code{bngCol} for data from the NBNatlas.}
 
@@ -35,9 +36,5 @@ This function removes absence data (as the models generate their own pseudo-abse
 bngprep(speciesdf = sp_gatewaydata, precisionCol = 'precision', bngCol = 'gridReference', datafrom = 'NBNgateway', mindata = 5000, minyear = 2006, maxyear = 2016, covarRes = 300)
 
 #Examples using data from NBN Atlas:
-bngprep(speciesdf = sp_atlasdata, bngCol = 'OSGR 1km', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
-
-bngprep(speciesdf = sp_atlasdata, bngCol = 'OSGR 2km', datafrom = 'NBNatlas', mindata = 5000, minyear = 1990, maxyear = 2010, covarRes = 500)
-
-bngprep(speciesdf = sp_atlasdata, bngCol = 'OSGR 10km', datafrom = 'NBNatlas', mindata = 5000, maxyear = 2002, covarRes = 300)
+bngprep(speciesdf = sp_atlasdata, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
 }
