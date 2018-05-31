@@ -13,10 +13,12 @@
 #'@return A copy of \code{speciesdf} with absence data removed, easting and northing columns generated from BNG grid references and data from Northern Ireland removed.
 #'@examples
 #'#Example using data from NBN Gateway:
-#'bngprep(speciesdf = sp_gatewaydata, precisionCol = 'precision', bngCol = 'gridReference', datafrom = 'NBNgateway', mindata = 5000, minyear = 2006, maxyear = 2016, covarRes = 300)
-#'
+
 #'#Examples using data from NBN Atlas:
-#'bngprep(speciesdf = sp_atlasdata, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
+#'
+#'data(ng_data)
+#'
+#'bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
 
 #'@export
 
