@@ -11,24 +11,7 @@ ngspdat <- bngprep(speciesdf = ng_data,  bngCol = "OSGR", datafrom = "NBNatlas",
 sp::coordinates(ngspdat)<- ~ easting + northing
 
 ## raster stack of predictor variables - vars
-#get UK extent
-UK <- ggplot2::map_data(map = "world", region = "UK")
-max.lat <- ceiling(max(UK$lat))
-min.lat <- floor(min(UK$lat))
-max.lon <- ceiling(max(UK$long))
-min.lon <- floor(min(UK$long))
-extent <- raster::extent(x = c(min.lon, max.lon, min.lat, max.lat))
-
-#get variables data
-bio<-raster::getData('worldclim',var='bio',res=5,lon=-2,lat=40)
-bio <- bio[[c("bio1","bio12")]]
-names(bio) <- c("Temp","Prec")
-
-#crop to uk
-bio<-raster::crop(bio,extent)
-
-##change to easting northing
-vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
+data(vars)
 
 #load background mask
 data(background)
@@ -61,7 +44,6 @@ evals <- as.data.frame(unlist(all_evals[2]))
 colnames(evals)[1] <- "score"
 expect_true(all(evals$score != "NA") == TRUE)
 })
-
 
 
 
