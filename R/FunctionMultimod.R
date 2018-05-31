@@ -20,6 +20,7 @@
 #'@param rndm_occ Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.
 #'@return A copy
 #'@examples
+sp_list <- c("Notonecta_glauca", "Sigara_dorsalis")
 
 #'@export
 
@@ -104,7 +105,7 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
             sp::coordinates(spdat) <- ~easting + northing
 
             # Create background
-            if ("taxonGroup" %in% colnames(spdat)) {
+            if ("taxonGroup" %in% names(spdat)) {
                 taxon <- spdat$taxonGroup[1]
             } else {
                 taxon <- readline(paste("unable to find background mask, please type in file name and extension.  "))  #manual prompt to insert taxon group
@@ -125,7 +126,7 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
             ## run SDM function
             final_out <- SDMs(occ = spdat, varstack = vars, models = models,
                 prop_test_data = prop_test_data, covarReskm = covarRes,
-                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ)
+                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, out_flder = out_flder)
             message(paste(sp, " modelling completed."))
             ptm <- proc.time()
             beepr::beep()
