@@ -3,12 +3,13 @@
 #### ----------------------
 
 context("Occurrence tests - general")
-ng_data<- read.csv(file="Inputs/Notonecta_glauca.csv", header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
+ng_data<- read.csv(file="Data/Inputs/Sigara_dorsalis.csv", header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
+names(ng_data)[names(ng_data) == "record _ number"] <- "NBNObservationID"
 
 occ <- bngprep(speciesdf = ng_data, bngCol = "OSGR", datafrom =
-                      "NBNatlas", minyear = 2007, maxyear = 2014, covarRes = 300)
+                      "NBNatlas", minyear = 1990, maxyear = 2014, covarRes = 300)
 occurrence <- raster::as.data.frame(occ)
-occurrence <- randomOcc(presframe = occurrence, precisionCol = "precision", covarResm = 300)
+occurrence <- randomOcc(presframe = occurrence, precisionCol = "precision", covarResm = 10)
 
 test_that("function returns dataframe with easting and northing", {
 
