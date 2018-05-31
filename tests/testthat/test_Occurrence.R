@@ -3,10 +3,10 @@
 #### ----------------------
 
 context("Occurrence tests - general")
-ng_data<- read.csv(file="Data/Inputs/Sigara_dorsalis.csv", header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
-names(ng_data)[names(ng_data) == "record _ number"] <- "NBNObservationID"
+data(sd_data)
+names(sd_data)[names(sd_data) == "record _ number"] <- "NBNObservationID"
 
-occ <- bngprep(speciesdf = ng_data, bngCol = "OSGR", datafrom =
+occ <- bngprep(speciesdf = sd_data, bngCol = "OSGR", datafrom =
                       "NBNatlas", minyear = 1990, maxyear = 2014, covarRes = 300)
 occurrence <- raster::as.data.frame(occ)
 occurrence <- randomOcc(presframe = occurrence, precisionCol = "precision", covarResm = 10)

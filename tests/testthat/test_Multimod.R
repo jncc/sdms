@@ -3,9 +3,6 @@
 #### ----------------------
 
 
-load("D:/Github/sdms/R/sysdata.rda")
-load(file = "D:/Becky docs/SDMs/varsLCM2015")
-
 
 #get species list
 sp_list <- c("Notonecta_glauca", "Sigara_dorsalis")
