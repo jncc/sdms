@@ -12,15 +12,49 @@
 #' @param max_tries Numeric, the numbers of times the model is run.
 #' @param lab The name of the output files.
 #' @param rndm_occ Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.
+#' @param out_flder The location of the output folder for your models.
 #' @return A list containing the prediction from the best model (as a raster layer showing probability of species occurrence), the best model evaluation and the best model itself.
 #' @examples
-#' SDMs(occ = occurrence, bckg = background, varstack = variables, max_tries = 5, lab = 'species', rndm_occ = TRUE)
+#' #load in the occurence data
+#' data(ng_data)
+#'
+#' Prepare this using the bngPrep function available in this package
+#'occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
+#'
+#'#convert to a SpatialPointsDataFrame
+#' sp::coordinates(occurrence)<- ~ easting + northing
+#'
+#' ## raster stack of predictor variables - vars
+#'#get UK extent
+#'UK <- ggplot2::map_data(map = "world", region = "UK")
+#'max.lat <- ceiling(max(UK$lat))
+#'min.lat <- floor(min(UK$lat))
+#'max.lon <- ceiling(max(UK$long))
+#'min.lon <- floor(min(UK$long))
+#'extent <- raster::extent(x = c(min.lon, max.lon, min.lat, max.lat))
+#'
+#'#get variables data
+#'bio<-raster::getData('worldclim',var='bio',res=5,lon=-2,lat=40)
+#'bio <- bio[[c("bio1","bio12")]]
+#'names(bio) <- c("Temp","Prec")
+#'
+#'#crop to uk
+#'bio<-raster::crop(bio,extent)
+#'
+#'#change to easting northing
+#'vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
+#'
+#'#load background mask
+#'data(background)
+#'
+#' # run the species distribution models
+#' SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 5, lab = 'species', rndm_occ = TRUE)
 #' @export
 
 SDMs <- function(occ = occurrence, bckg = background, varstack = vars,
     models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
     n_bg_points = nrow(pres_vars), prop_test_data = 0.25, covarReskm = 300,
-    max_tries = 2, lab = "species", rndm_occ = TRUE) {
+    max_tries = 2, lab = "species", rndm_occ = TRUE, out_flder = "Outputs/") {
 
     all_predicts <- NULL
     all_models <- NULL
@@ -344,10 +378,10 @@ SDMs <- function(occ = occurrence, bckg = background, varstack = vars,
     proc.time() - ptm
     pryr::mem_used()
 
-    save(all_models, file = paste("Outputs/", lab, tries, "models", sep = ""))
-    raster::writeRaster(Mean_predict, file = paste("Outputs/", lab, tries,
+    save(all_models, file = paste(out_flder, lab, tries, "models", sep = ""))
+    raster::writeRaster(Mean_predict, file = paste(out_flder, lab, tries,
         sep = ""), format = "GTiff")
-    utils::write.csv(all_evals, file = paste("Outputs/", lab, tries, ".csv",
+    utils::write.csv(all_evals, file = paste(out_flder, lab, tries, ".csv",
         sep = ""))
 
     beepr::beep()
