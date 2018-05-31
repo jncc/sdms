@@ -3,7 +3,7 @@
 #### ----------------------
 
 context("BNGdataprep - Atlas Example")
-ng_data<- read.csv(file="D:/Github/sdms/Data/Inputs/Notonecta_glauca.csv", header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
+ng_data<- read.csv(file="Data/Inputs/Notonecta_glauca.csv", header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
 
 ngspdat <- bngprep(speciesdf = ng_data,  bngCol = "OSGR", datafrom = "NBNatlas", mindata = 5000, minyear = 2007, maxyear = 2012, covarRes = 300)
 
