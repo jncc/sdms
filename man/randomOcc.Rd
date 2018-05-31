@@ -23,5 +23,12 @@ A copy of the input dataframe \code{presframe}, with new 'easting' and 'northing
 This function is used to randomise the location of a presence point where the species occurrence data is low resolution. For example, if your species occurrence data is at 1km resolution, but your environmental predictor variables are at 200m resolution, this enables you to randomise where within the 1km cell your species record is placed. The function can handle multiple resolutions within a single dataframe, as long as these are labelled with a precision column.
 }
 \examples{
+#load in the data
+data(ng_data)
+
+#prepare the data using the bngprep function in this package
+occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
+
+#run the random occurrences function
 randomOcc(presframe = occurrence, precisionCol = 'precision')
 }

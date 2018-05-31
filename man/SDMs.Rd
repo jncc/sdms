@@ -37,5 +37,38 @@ A list containing the prediction from the best model (as a raster layer showing 
 This function uses presence points for a species with a background mask to generate pseudo-absences, and then uses these with environmental data layers to generate species distribution models using a range of different model algorithms. The function then selects the best perfoming model and outputs the distribution that that model predicts, an evaluation of the model performance and the model itself.
 }
 \examples{
-SDMs(occ = occurrence, bckg = background, varstack = variables, max_tries = 5, lab = 'species', rndm_occ = TRUE)
+#load in the occurence data
+data(ng_data)
+
+Prepare this using the bngPrep function available in this package
+occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
+
+#convert to a SpatialPointsDataFrame
+sp::coordinates(occurrence)<- ~ easting + northing
+
+## raster stack of predictor variables - vars
+#get UK extent
+UK <- ggplot2::map_data(map = "world", region = "UK")
+max.lat <- ceiling(max(UK$lat))
+min.lat <- floor(min(UK$lat))
+max.lon <- ceiling(max(UK$long))
+min.lon <- floor(min(UK$long))
+extent <- raster::extent(x = c(min.lon, max.lon, min.lat, max.lat))
+
+#get variables data
+bio<-raster::getData('worldclim',var='bio',res=5,lon=-2,lat=40)
+bio <- bio[[c("bio1","bio12")]]
+names(bio) <- c("Temp","Prec")
+
+#crop to uk
+bio<-raster::crop(bio,extent)
+
+#change to easting northing
+vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
+
+#load background mask
+data(background)
+
+# run the species distribution models
+SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 5, lab = 'species', rndm_occ = TRUE)
 }
