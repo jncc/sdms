@@ -142,6 +142,7 @@ bngprep <- function(speciesdf, bngCol = "OSGR", precisionCol = "precision", data
         tetrad$easting <- tetrad$easting + tetrad$AddEast
         tetrad$northing <- tetrad$northing + tetrad$AddNorth
         tetrad$At10kcorner <- tetrad$AddEast <- tetrad$AddNorth <- tetrad$Letter <- NULL
+        colnames(tetrad)[1] <- ""
         speciesdf <- rbind(nontetrad, tetrad)
 
     }
