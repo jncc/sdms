@@ -32,7 +32,6 @@ A copy of \code{speciesdf} with absence data removed, easting and northing colum
 This function removes absence data (as the models generate their own pseudo-absences), converts British National Grid grid references into easting and northing coordinates and removes data from Northern Ireland to allow modelling using GB data layers.
 }
 \examples{
-#Example using data from NBN Gateway:
 #Examples using data from NBN Atlas:
 
 data(ng_data)

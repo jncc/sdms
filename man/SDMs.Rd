@@ -7,7 +7,8 @@
 SDMs(occ = occurrence, bckg = background, varstack = vars,
   models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
   n_bg_points = nrow(pres_vars), prop_test_data = 0.25, covarReskm = 300,
-  max_tries = 2, lab = "species", rndm_occ = TRUE)
+  max_tries = 2, lab = "species", rndm_occ = TRUE,
+  out_flder = "Outputs/")
 }
 \arguments{
 \item{occ}{A SpatialPointsDataFrame of presence points.}
@@ -29,6 +30,8 @@ SDMs(occ = occurrence, bckg = background, varstack = vars,
 \item{lab}{The name of the output files.}
 
 \item{rndm_occ}{Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.}
+
+\item{out_flder}{The location of the output folder for your models.}
 }
 \value{
 A list containing the prediction from the best model (as a raster layer showing probability of species occurrence), the best model evaluation and the best model itself.
@@ -40,13 +43,12 @@ This function uses presence points for a species with a background mask to gener
 #load in the occurence data
 data(ng_data)
 
-Prepare this using the bngPrep function available in this package
-occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
+#Prepare this using the bngPrep function available in this package
+occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom ='NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
 
 #convert to a SpatialPointsDataFrame
 sp::coordinates(occurrence)<- ~ easting + northing
 
-## raster stack of predictor variables - vars
 #get UK extent
 UK <- ggplot2::map_data(map = "world", region = "UK")
 max.lat <- ceiling(max(UK$lat))
@@ -69,6 +71,6 @@ vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
 #load background mask
 data(background)
 
-# run the species distribution models
-SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 5, lab = 'species', rndm_occ = TRUE)
+#run the species distribution models
+SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE)
 }

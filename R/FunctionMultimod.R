@@ -18,7 +18,7 @@
 #'@param bngCol The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNatlas, this will vary with recorder precision, so you should select the most appropriate for your data, for example 'OSGR 1km', 'OSGR 2km' or 'OSGR 10km'.
 #'@param mult_prssr Set up a parallel backend to use multiple processors. As a default this is turned off. Need to ensure the suggested packages have been loaded in order to run this.
 #'@param rndm_occ Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.
-#'@return A copy
+#'@return Lists containing predictions from the best models (as a raster layer showing probability of species occurrence), the best model evaluations and the best model itself for each species in a given species list.
 #'@examples
 #'#Provide a list of species you wish to model
 #'sp_list <- c("Notonecta_glauca", "Sigara_dorsalis")

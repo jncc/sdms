@@ -32,7 +32,8 @@ Imports: stringi,
     rJava,
     glmulti,
     utils,
-    dplyr
+    dplyr,
+    ggplot2
 Suggests: foreach,
     doParallel,
     testthat
