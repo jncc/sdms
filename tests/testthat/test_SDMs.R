@@ -1,11 +1,15 @@
 ## Tests to check the functionality of the Package function - SDMs
-#  Becky Trippier 22/05/2018
+#  Becky Trippier 05/06/2018
 #### ------------------------------------------------------------####
 context("SDMs tests")
 
-#### get test data
+### set working directory for tests
+start <- getwd()
 setwd(tempdir())
 dir.create("Outputs")
+
+
+#### get test data
 
 ## test occurrence data
 data(ng_data)
@@ -46,7 +50,8 @@ expect_true(exists("all_predicts") == TRUE)
 
 })
 
-
+# remove temporary files and return to working directory
 unlink("Outputs", recursive=TRUE)
+setwd(start)
 
 
