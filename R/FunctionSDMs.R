@@ -15,16 +15,15 @@
 #' @param out_flder The location of the output folder for your models.
 #' @return A list containing the prediction from the best model (as a raster layer showing probability of species occurrence), the best model evaluation and the best model itself.
 #' @examples
-#' #load in the occurence data
-#' data(ng_data)
+#'#load in the occurence data
+#'data(ng_data)
 #'
-#' Prepare this using the bngPrep function available in this package
-#'occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
+#'#Prepare this using the bngPrep function available in this package
+#'occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom ='NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
 #'
 #'#convert to a SpatialPointsDataFrame
-#' sp::coordinates(occurrence)<- ~ easting + northing
+#'sp::coordinates(occurrence)<- ~ easting + northing
 #'
-#' ## raster stack of predictor variables - vars
 #'#get UK extent
 #'UK <- ggplot2::map_data(map = "world", region = "UK")
 #'max.lat <- ceiling(max(UK$lat))
@@ -47,8 +46,8 @@
 #'#load background mask
 #'data(background)
 #'
-#' # run the species distribution models
-#' SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 5, lab = 'species', rndm_occ = TRUE)
+#'#run the species distribution models
+#'SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE)
 #' @export
 
 SDMs <- function(occ = occurrence, bckg = background, varstack = vars,

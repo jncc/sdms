@@ -14,9 +14,7 @@ dir.create("Outputs")
 dir.create("Inputs")
 dir.create("BGmasks")
 data("ng_data")
-ng_data$taxonGroup <- "Hemiptera"
 data("sd_data")
-sd_data$taxonGroup <- "Hemiptera"
 data("background")
 utils::write.csv(ng_data, file = "./Inputs/Notonecta_glauca.csv")
 utils::write.csv(ng_data, file = "./Inputs/Sigara_dorsalis.csv")

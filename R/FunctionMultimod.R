@@ -5,7 +5,7 @@
 #'@param sp_list List of unique species names which you wish to model.
 #'@param out_flder The location of the output folder for your models.
 #'@param dat_flder The location of the folder containing your species occurrence data, as data frames exported from NBN gateway or NBN atlas with files containing data for a single species.
-#'@param bkgd_flder The location of the folder containing your background masks. These should be raster files showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA.
+#'@param bkgd_flder The location of the folder containing your background masks. These should be raster files showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA. If this is not supplied, then pseudo absences with be generated from the variables layer.
 #'@param vars A RasterStack of the environmental parameters to be used as predictor variables for the species range.
 #'@param max_tries The number of times the number is run.
 #'@param datafrom Whether it is data from the 'NBNgateway' or 'NBNatlas'.
@@ -20,8 +20,46 @@
 #'@param rndm_occ Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.
 #'@return A copy
 #'@examples
-sp_list <- c("Notonecta_glauca", "Sigara_dorsalis")
-
+#'#Provide a list of species you wish to model
+#'sp_list <- c("Notonecta_glauca", "Sigara_dorsalis")
+#'
+#'#Organise an Input folder containing your input species files as .csv
+#'dir.create("Inputs")
+#'data("ng_data")
+#'data("sd_data")
+#'utils::write.csv(ng_data, file = "./Inputs/Notonecta_glauca.csv")
+#'utils::write.csv(ng_data, file = "./Inputs/Sigara_dorsalis.csv")
+#'
+#'#Organise a folder containing your background masks where your pseudo absences will be generated from.
+#'dir.create("BGmasks")
+#'data("background")
+#'save(background, file = "./BGmasks/Hemiptera")
+#'
+#'#Create outputs folder
+#'dir.create("Outputs")
+#'
+#'#Get variables data from worldclim
+#'#get UK extent
+#'UK <- ggplot2::map_data(map = "world", region = "UK")
+#'max.lat <- ceiling(max(UK$lat))
+#'min.lat <- floor(min(UK$lat))
+#'max.lon <- ceiling(max(UK$long))
+#'min.lon <- floor(min(UK$long))
+#'extent <- raster::extent(x = c(min.lon, max.lon, min.lat, max.lat))
+#'
+#'#get variables data
+#'bio<-raster::getData('worldclim',var='bio',res=5,lon=-2,lat=40)
+#'bio <- bio[[c("bio1","bio12")]]
+#'names(bio) <- c("Temp","Prec")
+#'
+#'#crop to uk
+#'bio<-raster::crop(bio,extent)
+#'
+#'#convert to easting northing
+#'vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
+#'
+#'#run the function
+#'output <- Multi_mod(sp_list = sp_list, vars, out_flder = "Outputs/",dat_flder = "Inputs/", bkgd_flder = "BGmasks/", max_tries = 1, datafrom = "NBNatlas", covarRes = 100, models = "BioClim", prop_test_data = 0.25, bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE)
 #'@export
 
 
