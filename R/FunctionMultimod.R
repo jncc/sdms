@@ -4,8 +4,8 @@
 #'
 #'@param sp_list List of unique species names which you wish to model.
 #'@param out_flder The location of the output folder for your models.
-#'@param dat_flder The location of the folder containing your species occurrence data, as data frames exported from NBN gateway or NBN atlas with files containing data for a single species.
-#'@param bkgd_flder The location of the folder containing your background masks. These should be raster files showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA. If this is not supplied, then pseudo absences with be generated from the variables layer.
+#'@param dat_flder The location of the folder containing your species occurrence data, as txt or csv files exported from NBN gateway or NBN atlas. Each file should contain data for a single species and the naming convention should correspond to your species list in order to be recognised. e.g. 'Triturus cristatus' in the sp_list should have a corresponding data file named 'Triturus cristatus.csv' in the dat_folder.
+#'@param bkgd_flder The location of the folder containing your background masks. These should be raster files showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA. This should be named after the Taxon Group e.g. 'amphibian' and if this is not found in the data by a 'taxonGroup' variable, then a manual input will be prompted. If this is no background mask is supplied, then pseudo absences with be generated from the variables layer.
 #'@param vars A RasterStack of the environmental parameters to be used as predictor variables for the species range.
 #'@param max_tries The number of times the number is run.
 #'@param datafrom Whether it is data from the 'NBNgateway' or 'NBNatlas'.
@@ -64,10 +64,10 @@
 
 
 Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "Inputs/",
-    bkgd_flder = "BGmasks/", vars, max_tries = 1, datafrom = "NBNgatweay",
+    bkgd_flder = "BGmasks/", vars, max_tries = 1, datafrom = "NBNatlas",
     minyear = 0, maxyear = 0, mindata = 5000, covarRes = 300, models = c("MaxEnt",
         "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"), prop_test_data = 0.25,
-    bngCol = "gridReference", mult_prssr = FALSE, rndm_occ = TRUE) {
+    bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE) {
 
 
 
@@ -79,6 +79,8 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
     for (i in 1:length(sp_list)) {
         sp <- sp_list[i]
         if  (file.exists(paste(dat_flder, sp,".csv", sep = ""))) {
+          sp_found <- sp_found + 1
+        } else if (file.exists(paste(dat_flder, sp, ".txt", sep = ""))) {
           sp_found <- sp_found + 1
         } else {
           sp_missing <- append(sp_missing, sp)
@@ -96,7 +98,9 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
     if (sp_found == 0) {
       stop("No species found. Check input data folder and file formats.")
     }
-
+    if (datafrom != "NBNatlas" & datafrom != "NBNgateway"){
+      stop("datafrom not specified as NBNatlas or NBNgateway. Modelling terminated.")
+      }
     ## ------------------ setting up done list -----------------------## If
     if (any(duplicated(sp_list)) == TRUE) {
       sp_list <- unique(sp_list)
