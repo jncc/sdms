@@ -12,8 +12,6 @@
 #'@param covarRes The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.
 #'@return A copy of \code{speciesdf} with absence data removed, easting and northing columns generated from BNG grid references and data from Northern Ireland removed.
 #'@examples
-#'#Example using data from NBN Gateway:
-
 #'#Examples using data from NBN Atlas:
 #'
 #'data(ng_data)
