@@ -34,6 +34,30 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
 
 
     alreadyDone <- NULL
+    sp_found <- 0
+    sp_missing <- NULL
+
+    ### input checks
+    for (i in 1:length(sp_list)) {
+        sp <- sp_list[i]
+        if  (file.exists(paste(dat_flder, sp,".csv", sep = ""))) {
+          sp_found <- sp_found + 1
+        } else {
+          sp_missing <- append(sp_missing, sp)
+        }
+      }
+    print(paste(sp_found, "out of", length(sp_list), " species files found in dat_flder."))
+    if (length(sp_missing) > 0) {
+      print("species files missing:")
+      for (i in 1:length(sp_missing)) {
+        sp <- sp_missing[i]
+        print(sp)
+      }
+    }
+
+    if (sp_found == 0) {
+      stop("No species found. Check input data folder and file formats.")
+    }
 
     ## ------------------ setting up done list -----------------------## If
     if (any(duplicated(sp_list)) == TRUE) {
@@ -59,6 +83,9 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
 
     sp_list <- sp_list[!sp_list %in% alreadyDone]  #remove alreadyDone species from sp_list
 
+    if (length(unlist(sp_list)) < 1) {
+      stop("No more species to process. Modelling terminated.")
+    }
 
     ## ------------------ setting up multiple processors
     ## -----------------------##
@@ -120,6 +147,7 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
                 r[!is.na(r[])] <- 1
                 background <- r
                 rm(r)
+                print("Unable to obtain background mask from folder. This has been generated from the vars layer.")
             }
 
 
@@ -163,10 +191,10 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
             sp::coordinates(spdat) <- ~easting + northing
 
             # Create background
-            if ("taxonGroup" %in% colnames(spdat)) {
+            if ("taxonGroup" %in% names(spdat)) {
                 taxon <- spdat$taxonGroup[1]
             } else {
-                taxon <- readline(paste("what taxon group is", sp, " ?"))  #manual prompt to insert taxon group
+              taxon <- readline(paste("unable to find background mask, please type in file name and extension.  "))  #manual prompt to insert taxon group
             }
             tryCatch(load(file = paste(bkgd_flder, taxon, sep = "")),
                 error = function(err) NA)
@@ -178,6 +206,7 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
                 r[!is.na(r[])] <- 1
                 background <- r
                 rm(r)
+                print("Unable to obtain background mask from folder. This has been generated from the vars layer.")
             }
 
 
