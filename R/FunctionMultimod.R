@@ -63,8 +63,8 @@
 #'@export
 
 
-Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "Inputs/",
-    bkgd_flder = "BGmasks/", vars, max_tries = 1, datafrom = "NBNatlas",
+Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
+    bkgd_flder, vars, max_tries = 1, datafrom = "NBNatlas",
     minyear = 0, maxyear = 0, mindata = 5000, covarRes = 300, models = c("MaxEnt",
         "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"), prop_test_data = 0.25,
     bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE) {
@@ -74,6 +74,8 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
     alreadyDone <- NULL
     sp_found <- 0
     sp_missing <- NULL
+
+    ptm <- proc.time()
 
     ### input checks
     for (i in 1:length(sp_list)) {
@@ -198,7 +200,8 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
                 prop_test_data = prop_test_data, covarReskm = covarRes,
                 max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, out_flder = out_flder)
             message(paste(sp, " modelling completed."))
-            ptm <- proc.time()
+            print("Overall runtime:")
+            print(ptm <- proc.time())
             beepr::beep()
 
         }
@@ -261,7 +264,8 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder = "In
             # stop cluster if parrallel processing
             parallel::stopCluster(cl)
             message("Parallel clustering off.")
-            proc.time() - ptm
+            print("Overall runtime:")
+            print(proc.time() - ptm)
             beepr::beep()
 
         }

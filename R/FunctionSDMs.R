@@ -374,7 +374,7 @@ SDMs <- function(occ = occurrence, bckg = background, varstack = vars,
         nrow = length(models) + 1, byrow = F), stringsAsFactors = FALSE))
     raster::plot(Mean_predict)
     # beep(0)
-    proc.time() - ptm
+    print(proc.time() - ptm)
     pryr::mem_used()
 
     save(all_models, file = paste(out_flder, lab, tries, "models", sep = ""))
