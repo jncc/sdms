@@ -179,7 +179,7 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
             if ("taxonGroup" %in% names(spdat)) {
                 taxon <- spdat$taxonGroup[1]
             } else {
-                taxon <- readline(paste("unable to find background mask, please type in file name and extension.  "))  #manual prompt to insert taxon group
+                print("Unable to find taxonGroup field in data.")
             }
             tryCatch(load(file = paste(bkgd_flder, taxon, sep = "")),
                 error = function(err) NA)
