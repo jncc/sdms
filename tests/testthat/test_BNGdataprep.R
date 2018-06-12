@@ -54,3 +54,18 @@ test_that("where no datafrom specified, function will still run", {
   expect_warning(spdat <- bngprep(speciesdf = ng_data,  bngCol = "OSGR", mindata = 5000, minyear = 2007, maxyear = 2014, covarRes = 300), "datafrom not specified as NBNatlas or NBNgateway." )
   expect_is(spdat, "data.frame")
 })
+
+test_that("lower and upper case OSGR handled", {
+  #all lowercase
+  data("ng_data")
+  ng_data$OSGR <- tolower(ng_data$OSGR)
+  ngspdat <- bngprep(speciesdf = ng_data,  bngCol = "OSGR", datafrom = "NBNatlas", mindata = 5000, minyear = 2007, maxyear = 2012, covarRes = 300)
+  expect_true(all(grepl("^[[:upper:]]", ngspdat$OSGR)))
+
+  #mixture
+  ng_data[1:10, "OSGR"] <- toupper(ng_data[1:10, "OSGR"])
+  ngspdat <- bngprep(speciesdf = ng_data,  bngCol = "OSGR", datafrom = "NBNatlas", mindata = 5000, minyear = 2007, maxyear = 2012, covarRes = 300)
+  expect_true(all(grepl("^[[:upper:]]", ngspdat$OSGR)))
+
+})
+

@@ -97,6 +97,7 @@ bngprep <- function(speciesdf, bngCol = "OSGR", precisionCol = "precision", data
     }
     speciesdf$easting<-NA
     speciesdf$northing<-NA
+    speciesdf$OSGR <- toupper(speciesdf$OSGR)
 
     # Split between normal grid refs and 'tetrad' (2km) grids
     nontetrad <- speciesdf[which(!speciesdf[[precisionCol]] == 2000), ]
