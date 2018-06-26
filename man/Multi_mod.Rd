@@ -17,7 +17,7 @@ Multi_mod(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_flder,
 
 \item{dat_flder}{The location of the folder containing your species occurrence data, as txt or csv files exported from NBN gateway or NBN atlas. Each file should contain data for a single species and the naming convention should correspond to your species list in order to be recognised. e.g. 'Triturus cristatus' in the sp_list should have a corresponding data file named 'Triturus cristatus.csv' in the dat_folder.}
 
-\item{bkgd_flder}{The location of the folder containing your background masks. These should be raster files showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA. This should be named after the Taxon Group e.g. 'amphibian' and if this is not found in the data by a 'taxonGroup' variable, then a manual input will be prompted. If this is no background mask is supplied, then pseudo absences with be generated from the variables layer.}
+\item{bkgd_flder}{The location of the folder containing your background masks. These should be raster files showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA. This should be named after the Taxon Group e.g. 'amphibian' and if this is not found in the data by a 'taxonGroup' variable, then a manual input will be prompted. If no background mask is supplied, then pseudo absences with be generated from the variables layer.}
 
 \item{vars}{A RasterStack of the environmental parameters to be used as predictor variables for the species range.}
 

@@ -5,7 +5,7 @@
 \title{Prepare data from NBN gateway or atlas for use in species distribution modelling.}
 \usage{
 bngprep(speciesdf, bngCol = "OSGR", precisionCol = "precision",
-  datafrom = "Na", minyear = 0, maxyear = 0, mindata = 5000,
+  datafrom = "NBNatlas", minyear = 0, maxyear = 0, mindata = 5000,
   covarRes = 300)
 }
 \arguments{
@@ -15,7 +15,7 @@ bngprep(speciesdf, bngCol = "OSGR", precisionCol = "precision",
 
 \item{precisionCol}{The column name of the column in \code{speciesdf} denoting the precision of the species record locations. This only needs to be specified for NBNgateway data as this is generated from the selected \code{bngCol} for data from the NBNatlas.}
 
-\item{datafrom}{Character, one of 'NBNgateway' or 'NBNatlas', indicating the data source.}
+\item{datafrom}{Character, one of 'NBNgateway' or 'NBNatlas', indicating the data source.'NBNatlas' is the default.}
 
 \item{minyear}{Numeric, the earliest year from which data should be selected. Year inclusive, data older than this will be discarded.}
 

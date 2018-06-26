@@ -4,7 +4,7 @@
 \alias{SDMs}
 \title{Prepare presence and pseudo-absence data, run selected models and evaluate best model.}
 \usage{
-SDMs(occ = occurrence, bckg = background, varstack = vars,
+SDMs(occ = occurrence, bckg = "NA", varstack = vars,
   models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
   n_bg_points = nrow(pres_vars), prop_test_data = 0.25, covarReskm = 300,
   max_tries = 2, lab = "species", rndm_occ = TRUE,
@@ -13,7 +13,7 @@ SDMs(occ = occurrence, bckg = background, varstack = vars,
 \arguments{
 \item{occ}{A SpatialPointsDataFrame of presence points.}
 
-\item{bckg}{A raster showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA.}
+\item{bckg}{A raster showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA. If no background mask is supplied, then pseudo absences with be generated from the variables layer.}
 
 \item{varstack}{A RasterStack of the environmental parameters to be used as predictor variables for the species range.}
 
