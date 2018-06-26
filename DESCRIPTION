@@ -32,11 +32,12 @@ Imports: stringi,
     rJava,
     glmulti,
     utils,
-    dplyr,
-    ggplot2
+    ggplot2,
+    dplyr
 Suggests: foreach,
     doParallel,
     testthat, 
     knitr,
-    rmarkdown
+    rmarkdown,
+    kableExtra    
 VignetteBuilder: knitr
