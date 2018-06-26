@@ -1,0 +1,156 @@
+---
+title: "Single Species Distribution Modelling using the SDMs function"
+author: "Becky Trippier"
+date: "25th June 2018"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Multiple Species Distribution modelling using the SDMFunction in the JNCCSDMs package}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+JNCC has produced species distribution model functions designed to be used with presence records from the NBN Atlas <https://nbnatlas.org/>, previously the NBN Gateway. The format of data from the NBN Gateway and NBN Atlas differ, which is why the 'datafrom' field must be specified when preparing the data using the bngprep function.
+
+As well as presence points, the function expects an input of a RasterStack of environmental parameters, to be used as the predictor variables for which species range will be assessed. It also allows you to include a background mask for the species, from which the pseudo-absence points will be generated. The ensemble model is customisable allowing you to run any of the following common species distribution models: 
+
+* MaxEnt - Maximum Entropy model - see maxent{dismo}
+
+* BioClim - Bioclim climate-envelope-model - see bioclim{dismo}
+
+* SVM - Kernel Support Vector Machine - see ksvm{kernlab}
+
+* RF - Random Forest - see randomForest{randomForest}
+
+* GLM - General Linear Model - see glmulti{glmulti}
+
+* GAM - Generalised Additive Model - see gam{mgcv}
+
+* BRT - Boosted Regeresstion Trees - see gbm.step{dismo}
+
+You can also specify how many times to run each model, the proportion of your testing data you wish to use in evaluating model performance, and whether you wish to  randomise the locations of presence points when the species occurrence data is of a low resolution (through use of the randomOcc function).
+
+
+The function will select the best performing model and returns the model itself, the distribution that the model predicts as a GTiff file, and a csv file containing the evaluations of each model's performance for each time it was run.
+
+
+## Getting Started
+
+### Loading and Preparing the NBN data
+
+First download the presence records for the species you wish to model from the NBN Atlas' website <https://nbnatlas.org/>. If you specify the output to be downloaded as a .csv file, you can load this into R using:
+
+
+```{r}
+ng_data<- read.csv(file="D:/Github/sdms/data/Notonecta_glauca.csv", header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
+```
+When reading in the data, ensure that the header names are kept the same by setting the check.names argument to FALSE. Otherwise this will cause problems when using the BNGprep function.
+
+Once the data is in, run the bngprep function found in this package to prepare our data into a fit state for modelling. This transforms the data by removing any absence records, records outside of Great Britain (e.g. Northern Ireland), and converts the location given in British National Grid references into easting and northing coordinates. It also allows you to subset the data by specifying a year range with which you wish to extract records between, using the minyear and maxyear arguments.
+
+```{r}
+library(JNCCsdms)
+
+occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom ='NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
+```
+
+The function will update you with how many records were left after subsetting to GB and between your specified years, and if any records were removed due to low resolution (where a minimum data limit has been specified). Once the bngprep function has finished, your data should contain new columns for precision, easting and northing.
+
+```{r, echo = FALSE}
+library(dplyr)
+library(kableExtra)
+occurrence %>% select("Record ID", "Scientific Name", "precision", "easting", "northing") %>% 
+  head() %>% 
+  kable()
+
+```
+
+The last step is to convert this from a data frame to a spatial points data frame, ready for use in our model.
+
+```{r}
+sp::coordinates(occurrence)<- ~ easting + northing
+
+```
+
+
+
+### Preparing the environmental variables
+
+To predict species distribution across the landscape, the model requires an input of environmental parameters in the form of a RasterStack. These are environmental variables which influence the distribution of a species across the modelled area and are used to predict the liklihood of their presence. These can vary in their importance and can include variables relating to climate, soil type and depth, vegetation cover, dominant vegetation type, land use, terrain or habitat condition.
+
+For this example, we are going to used bioclimatic data from WorldClim <http://www.worldclim.org/>. These are open sourced global bioclimatic variables derived from monthly temperature and rainfall estimates at a 1km2 spatial resolution. For simplicity we will only be using the following varibales:
+
+BIO1 = Annual Mean Temperature
+BIO12 = Annual Precipitation
+
+Using the UK outline we can crop these data just to our area of interest and finally it is converted to a rasterstack using the projectRaster function.
+
+```{r}
+
+#get UK extent
+UK <- ggplot2::map_data(map = "world", region = "UK")
+max.lat <- ceiling(max(UK$lat))
+min.lat <- floor(min(UK$lat))
+max.lon <- ceiling(max(UK$long))
+min.lon <- floor(min(UK$long))
+extent <- raster::extent(x = c(min.lon, max.lon, min.lat, max.lat))
+
+#get variables data
+bio<-raster::getData('worldclim',var='bio',res=5,lon=-2,lat=40)
+bio <- bio[[c("bio1","bio12")]]
+names(bio) <- c("Temp","Prec")
+
+#crop to uk
+bio<-raster::crop(bio,extent)
+
+#change to easting northing
+vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
+
+
+```
+
+This is a very basic example just using two climatic variables to assess the species presence against. Other predictor variables can be incorporated into this such as habitat maps, elevation, etc, using the stack() function in the raster package. Once you have a rasterstack containing all of the variables you deem important to model your species' distribution against, the you are ready to move onto modelling.
+
+
+### Preparing the background mask
+
+The background mask is the area in which we want to place our pseudo-absence points.Some of the species distribution models available to use in this package use presence only data in their predictions such as BioClim, whereas others will use both presence and absence data, such as Generalized Linear Modelling or Random Forest. 
+
+Where the presence points demonstrate areas where the species is likely to be present, the background mask will establish areas which are likely to be unsuitable for the species.This could include aspects such as marine areas when modelling terrestrial species, eliminating saltwaters and brackish habitats for freshwater species, or unsuitable elevations or barriers which restrict a species' movement.
+
+A background mask does not need to be supplied. If this argument is left blank then one will be generated from the first rasterlayer of your environmental variables stack, in areas where data was missing. 
+
+### Running the model
+
+Once you have your presence data as a SpatialPointsDataFrame, a RasterStack of environmental variables and your background mask as a raster, you are ready to run your models.
+
+Important arguments to consider with this function besides these three key elements are:
+
+* max_tries - this is how many times you wish the models to be run. There is no limit on the maximum number of runs you can set, however where this number exceeds 100 a prompt will appear to make sure that you wish to continueWith each model run a message will be returned to notify you after each model has been completed and each run cycle has been completed, allowing you to keep track of progress. 
+
+* models - these are the models you wish to run. The current list of models available are 'MaxEnt', 'BioClim', 'SVM', 'RF', 'GLM', 'GAM', 'BRT'. By default they will all run, although in order to run the MaxEnt model you MUST have maxent.jar in your dismo/java folder.
+
+* lab and out_flder - this will define how your output files will be labelled and where they will be stored
+
+* rndm_occ - this is whether you wish to randomise the location of presence points where species occurrence data is at low resolution. This calls the randomOcc function available in this package and helps to increase model accuracy where data resolution is low.
+
+To run the models call the SDMs() function and the outputs will be returned at your specified location, with the species liklihood based upon the best performing model and the AUC evaluation of each model and model run's performance.
+
+```{r}
+setwd(tempdir())
+dir.create("Outputs")
+
+
+#SDMs(occ = occurrence, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE, models = c("BioClim", "GLM"), out_flder = "Outputs/")
+
+
+unlink(tempdir(), recursive=TRUE)
+
+```
+
+
