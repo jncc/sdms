@@ -62,8 +62,6 @@ occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom ='NBNatlas'
 The function will update you with how many records were left after subsetting to GB and between your specified years, and if any records were removed due to low resolution (where a minimum data limit has been specified). Once the bngprep function has finished, your data should contain new columns for precision, easting and northing.
 
 ```{r, echo = FALSE}
-library(dplyr)
-library(kableExtra)
 occurrence %>% select("Record ID", "Scientific Name", "precision", "easting", "northing") %>% 
   head() %>% 
   kable()
