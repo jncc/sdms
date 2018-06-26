@@ -5,7 +5,7 @@
 #'@param sp_list List of unique species names which you wish to model.
 #'@param out_flder The location of the output folder for your models.
 #'@param dat_flder The location of the folder containing your species occurrence data, as txt or csv files exported from NBN gateway or NBN atlas. Each file should contain data for a single species and the naming convention should correspond to your species list in order to be recognised. e.g. 'Triturus cristatus' in the sp_list should have a corresponding data file named 'Triturus cristatus.csv' in the dat_folder.
-#'@param bkgd_flder The location of the folder containing your background masks. These should be raster files showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA. This should be named after the Taxon Group e.g. 'amphibian' and if this is not found in the data by a 'taxonGroup' variable, then a manual input will be prompted. If this is no background mask is supplied, then pseudo absences with be generated from the variables layer.
+#'@param bkgd_flder The location of the folder containing your background masks. These should be raster files showing the background area in which pseudo-absence points will be placed. Cells from which background points should be taken should have a value of 1 and excluded cells should be NA. This should be named after the Taxon Group e.g. 'amphibian' and if this is not found in the data by a 'taxonGroup' variable, then a manual input will be prompted. If no background mask is supplied, then pseudo absences with be generated from the variables layer.
 #'@param vars A RasterStack of the environmental parameters to be used as predictor variables for the species range.
 #'@param max_tries The number of times the number is run.
 #'@param datafrom Whether it is data from the 'NBNgateway' or 'NBNatlas'.
@@ -198,7 +198,7 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
             ## run SDM function
             final_out <- SDMs(occ = spdat, varstack = vars, models = models,
                 prop_test_data = prop_test_data, covarReskm = covarRes,
-                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, out_flder = out_flder)
+                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, out_flder = out_flder, bckg = background)
             message(paste(sp, " modelling completed."))
             print("Overall runtime:")
             print(ptm <- proc.time())
@@ -258,7 +258,7 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
             ## run SDM function
             final_out <- SDMs(occ = spdat, varstack = vars, models = models,
                 prop_test_data = prop_test_data, covarReskm = covarRes,
-                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ)
+                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, bckg = background)
             ptm <- proc.time()
 
             # stop cluster if parrallel processing
