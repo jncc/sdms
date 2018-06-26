@@ -5,7 +5,7 @@
 #'@param speciesdf Data frame exported from NBN gateway or NBN atlas with data for a species.
 #'@param bngCol The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNgateway this is the 'gridReference' field. The default is set to the 'OSGR' field which is used for data from NBNatlas and is also used to generate the location precision.
 #'@param precisionCol The column name of the column in \code{speciesdf} denoting the precision of the species record locations. This only needs to be specified for NBNgateway data as this is generated from the selected \code{bngCol} for data from the NBNatlas.
-#'@param datafrom Character, one of 'NBNgateway' or 'NBNatlas', indicating the data source.
+#'@param datafrom Character, one of 'NBNgateway' or 'NBNatlas', indicating the data source.'NBNatlas' is the default.
 #'@param minyear Numeric, the earliest year from which data should be selected. Year inclusive, data older than this will be discarded.
 #'@param maxyear Numeric, the latest year from which data should be used. Year inclusive, data newer than this will be discarded.
 #'@param mindata The target minimum number of data points to return. If this is specified, the lowest resolution data will be discarded if there are enough higher resolution data points available to reach this target.
@@ -20,7 +20,7 @@
 
 #'@export
 
-bngprep <- function(speciesdf, bngCol = "OSGR", precisionCol = "precision", datafrom = "Na",
+bngprep <- function(speciesdf, bngCol = "OSGR", precisionCol = "precision", datafrom = "NBNatlas",
     minyear = 0, maxyear = 0, mindata = 5000, covarRes = 300) {
 
 
