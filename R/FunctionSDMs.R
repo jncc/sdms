@@ -50,7 +50,7 @@
 #'SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE)
 #' @export
 
-SDMs <- function(occ = occurrence, bckg = "NA", varstack = vars,
+SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
     models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
     n_bg_points = nrow(pres_vars), prop_test_data = 0.25, covarReskm = 300,
     max_tries = 2, lab = "species", rndm_occ = TRUE, out_flder = "Outputs/") {
@@ -82,7 +82,7 @@ SDMs <- function(occ = occurrence, bckg = "NA", varstack = vars,
     if (all(models %in% accepted_models) ==FALSE) stop("Model specification contains an unexpected value, please check model names input. Operation terminated.")
 
 
-    if (bckg == "NA"){
+    if (is.null(bckg)){
       r <- vars[[1]]
     r[!is.na(r[])] <- 1
     background <- r
@@ -90,6 +90,7 @@ SDMs <- function(occ = occurrence, bckg = "NA", varstack = vars,
     rm(r)
     print("No background mask supplied.")
     }
+
 
         #---------------------generate random occurrences ---------------------------------------------#
 
