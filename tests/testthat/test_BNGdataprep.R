@@ -48,12 +48,6 @@ test_that("maxyear smaller than minyear warning", {
 })
 
 
-test_that("where no datafrom specified, function will still run", {
-  ng_data$precision <- 1000
-  names(ng_data)[names(ng_data) == "Year"] <- "year"
-  expect_warning(spdat <- bngprep(speciesdf = ng_data,  bngCol = "OSGR", mindata = 5000, minyear = 2007, maxyear = 2014, covarRes = 300), "datafrom not specified as NBNatlas or NBNgateway." )
-  expect_is(spdat, "data.frame")
-})
 
 test_that("lower and upper case OSGR handled", {
   #all lowercase
