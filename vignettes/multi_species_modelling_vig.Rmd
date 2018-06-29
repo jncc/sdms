@@ -1,0 +1,110 @@
+---
+title: "Multi_species_modelling_vig"
+author: "Becky Trippier"
+date: "29 June 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+JNCC has produced species distribution model functions designed to be used with presence records from the NBN Atlas <https://nbnatlas.org/>, previously the NBN Gateway. The format of data from the NBN Gateway and NBN Atlas differ, which is why the 'datafrom' field must be specified when preparing the data using the bngprep function. The Multi_mod() function is designed to automate the species distribution modelling process when running models for multiple species. By specifying the folders containing the relevant data and the arguments for use in the SDMs() function, the Multi_mod function can iterate through each species in a supplied species list until all of these have been processed.
+
+As well as presence points, the models expect an input of a RasterStack of environmental parameters, to be used as the predictor variables for which species range will be assessed. It also allows you to include a background mask for the species, from which the pseudo-absence points will be generated. The ensemble model is customisable allowing you to run any of the following common species distribution models: 
+
+* MaxEnt - Maximum Entropy model - see maxent{dismo}
+
+* BioClim - Bioclim climate-envelope-model - see bioclim{dismo}
+
+* SVM - Kernel Support Vector Machine - see ksvm{kernlab}
+
+* RF - Random Forest - see randomForest{randomForest}
+
+* GLM - General Linear Model - see glmulti{glmulti}
+
+* GAM - Generalised Additive Model - see gam{mgcv}
+
+* BRT - Boosted Regeresstion Trees - see gbm.step{dismo}
+
+You can also specify how many times you would like each model to run, the proportion of your testing data you wish to use in evaluating model performance, and whether you wish to  randomise the locations of presence points when the species occurrence data is of a low resolution (through use of the randomOcc function).
+
+
+The function will select the best performing model for each species and return the model itself, the distribution that the model predicted as a GTiff file, and a csv file containing the evaluations of each model's performance for each time it was run for every species. These are returned in the folder specified in the outputs argument of the function.
+
+
+## Modelling with Multi_mod
+
+The main difference between the multi_mod function and the sdms function is that the multi_mod is designed to automatically iterate through multiple species with minimal user input. Before using the function you will need the prepare:
+
+1. The dat_flder - A folder containing your species presence records.These should be as txt or csv files exported from NBN gateway or NBN atlas. Each file should contain data for a single species and the naming convention should correspond to your species list in order to be recognised. e.g. 'Triturus cristatus' in the sp_list should have a corresponding data file named 'Triturus cristatus.csv' in the dat_folder.
+
+2. The bkgd_flder - This is the folder location of your background masks, if you are using these in your models to generate the pseudo-absences for the species. These should be raster files showing the background area in which pseudo-absence points will be placed. These files should be named after the Taxon Group e.g. 'amphibian' and if this is not found in the data by a 'taxonGroup' variable. If no background mask is supplied, then pseudo absences with be generated from the variables layer.
+
+3. The vars RasterStack - A RasterStack of the environmental parameters to be used as predictor variables for the species range. This will be used to assess all the species you input into the species list. 
+
+4. A sp_list - This is the list of species you wish to model and the names should correspond to the names of the files found in your dat_flder. Where output files for a species in the list are already found in the specified out_flder then this species won't be modelling, so as to avoid duplications. This can be loaded in as an excel file and then converted into a list using the base::unlist() function or simply loaded in as a list as with the example below.
+
+As well as adjusting the model parameters, iterations and which models you run for each species, the function also lets you set whether to process using multiple processors. This helps to prevent overloading your machine by calling functions form the Parallel package to set up parallel processing whilst the models are running.
+
+## Example using Multi_mod
+
+```{r}
+start <- getwd()
+data("ng_data")
+data("sd_data")
+data("background")
+setwd(tempdir())
+
+
+#Provide a list of species you wish to model
+sp_list <- c("Notonecta_glauca", "Sigara_dorsalis")
+
+#Organise an Input folder containing your input species files as .csv
+dir.create("Inputs")
+utils::write.csv(ng_data, file = "./Inputs/Notonecta_glauca.csv")
+utils::write.csv(ng_data, file = "./Inputs/Sigara_dorsalis.csv")
+
+#Organise a folder containing your background masks where your pseudo absences will be generated from.
+dir.create("BGmasks")
+
+save(background, file = "./BGmasks/Hemiptera")
+
+#Create outputs folder
+dir.create("Outputs")
+
+# Preparing the variables data using worldclim
+#get UK extent
+UK <- ggplot2::map_data(map = "world", region = "UK")
+max.lat <- ceiling(max(UK$lat))
+min.lat <- floor(min(UK$lat))
+max.lon <- ceiling(max(UK$long))
+min.lon <- floor(min(UK$long))
+extent <- raster::extent(x = c(min.lon, max.lon, min.lat, max.lat))
+
+#get variables data
+bio<-raster::getData('worldclim',var='bio',res=5,lon=-2,lat=40)
+bio <- bio[[c("bio1","bio12")]]
+names(bio) <- c("Temp","Prec")
+
+#crop to uk
+bio<-raster::crop(bio,extent)
+
+#convert to easting northing
+vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
+
+#load the package
+library(JNCCsdms)
+
+#run the function
+#Multi_mod(sp_list = sp_list, vars, out_flder = "Outputs/",dat_flder = "Inputs/", bkgd_flder = "BGmasks/", max_tries = 1, datafrom = "NBNatlas", covarRes = 100, models = c("BioClim", "GLM"), prop_test_data = 0.25, bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE)
+
+
+
+unlink("Outputs", recursive=TRUE)
+setwd(start)
+unlink(tempdir(), recursive=TRUE)
+```
+

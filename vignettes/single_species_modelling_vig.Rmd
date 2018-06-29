@@ -47,7 +47,7 @@ First download the presence records for the species you wish to model from the N
 
 
 ```{r}
-ng_data<- read.csv(file="D:/Github/sdms/data/Notonecta_glauca.csv", header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
+ng_data<- read.csv(file="data/Notonecta_glauca.csv", header=TRUE, sep=",", check.names = FALSE, strip.white = TRUE)
 ```
 When reading in the data, ensure that the header names are kept the same by setting the check.names argument to FALSE. Otherwise this will cause problems when using the BNGprep function.
 
