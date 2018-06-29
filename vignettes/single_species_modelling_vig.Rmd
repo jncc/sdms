@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-JNCC has produced species distribution model functions designed to be used with presence records from the NBN Atlas <https://nbnatlas.org/>, previously the NBN Gateway. The format of data from the NBN Gateway and NBN Atlas differ, which is why the 'datafrom' field must be specified when preparing the data using the bngprep function.
+JNCC has produced species distribution model functions designed to be used with presence records from the NBN Atlas <https://nbnatlas.org/>, previously the NBN Gateway. The format of data from the NBN Gateway and NBN Atlas differ, which is why the 'datafrom' field must be specified when preparing the data using the bngprep function.The SDMs() function is designed model a single species after having preparing the presence data first using the bnbprep() function.
 
 As well as presence points, the function expects an input of a RasterStack of environmental parameters, to be used as the predictor variables for which species range will be assessed. It also allows you to include a background mask for the species, from which the pseudo-absence points will be generated. The ensemble model is customisable allowing you to run any of the following common species distribution models: 
 
@@ -62,6 +62,9 @@ occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom ='NBNatlas'
 The function will update you with how many records were left after subsetting to GB and between your specified years, and if any records were removed due to low resolution (where a minimum data limit has been specified). Once the bngprep function has finished, your data should contain new columns for precision, easting and northing.
 
 ```{r, echo = FALSE}
+library(dplyr)
+library(kableExtra)
+
 occurrence %>% select("Record ID", "Scientific Name", "precision", "easting", "northing") %>% 
   head() %>% 
   kable()
