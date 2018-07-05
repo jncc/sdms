@@ -177,15 +177,26 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
 
             # Create background
             if ("taxonGroup" %in% names(spdat)) {
-                taxon <- spdat$taxonGroup[1]
+                taxon <- as.character(spdat$taxonGroup[1])
             } else {
                 print("Unable to find taxonGroup field in data.")
             }
-            tryCatch(load(file = paste(bkgd_flder, taxon, sep = "")),
-                error = function(err) NA)
-            if (exists("mask1km")) {
-                background <- mask1km
-                rm(mask1km)
+
+            #try to load the background
+
+             load_obj <- function(f)
+            {
+              env <- new.env()
+              nm <- load(f, env)[1]
+              env[[nm]]
+             }
+
+            bkgd_name <-  paste(bkgd_flder, taxon, sep = "")
+
+            background <- tryCatch(load_obj(bkgd_name), error = function(err) NA)
+
+            if (exists("background")) {
+                print("Background mask found.")
             } else {
                 r <- vars[[1]]
                 r[!is.na(r[])] <- 1
@@ -237,7 +248,7 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
 
             # Create background
             if ("taxonGroup" %in% names(spdat)) {
-                taxon <- spdat$taxonGroup[1]
+                taxon <- as.character(spdat$taxonGroup[1])
             } else {
               taxon <- readline(paste("unable to find background mask, please type in file name and extension.  "))  #manual prompt to insert taxon group
             }
