@@ -248,28 +248,39 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
 
             # Create background
             if ("taxonGroup" %in% names(spdat)) {
-                taxon <- as.character(spdat$taxonGroup[1])
+              taxon <- as.character(spdat$taxonGroup[1])
             } else {
-              taxon <- readline(paste("unable to find background mask, please type in file name and extension.  "))  #manual prompt to insert taxon group
+              print("Unable to find taxonGroup field in data.")
             }
-            tryCatch(load(file = paste(bkgd_flder, taxon, sep = "")),
-                error = function(err) NA)
-            if (exists("mask1km")) {
-                background <- mask1km
-                rm(mask1km)
+
+            #try to load the background
+
+            load_obj <- function(f)
+            {
+              env <- new.env()
+              nm <- load(f, env)[1]
+              env[[nm]]
+            }
+
+            bkgd_name <-  paste(bkgd_flder, taxon, sep = "")
+
+            background <- tryCatch(load_obj(bkgd_name), error = function(err) NA)
+
+            if (exists("background")) {
+              print("Background mask found.")
             } else {
-                r <- vars[[1]]
-                r[!is.na(r[])] <- 1
-                background <- r
-                rm(r)
-                print("Unable to obtain background mask from folder. This has been generated from the vars layer.")
+              r <- vars[[1]]
+              r[!is.na(r[])] <- 1
+              background <- r
+              rm(r)
+              print("Unable to obtain background mask from folder. This has been generated from the vars layer.")
             }
 
 
             ## run SDM function
             final_out <- SDMs(occ = spdat, varstack = vars, models = models,
                 prop_test_data = prop_test_data, covarReskm = covarRes,
-                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, bckg = background)
+                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, bckg = background, out_flder = out_flder)
             ptm <- proc.time()
 
             # stop cluster if parrallel processing
