@@ -4,7 +4,7 @@
 \alias{SDMs}
 \title{Prepare presence and pseudo-absence data, run selected models and evaluate best model.}
 \usage{
-SDMs(occ = occurrence, bckg = "NA", varstack = vars,
+SDMs(occ = occurrence, bckg = NULL, varstack = vars,
   models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
   n_bg_points = nrow(pres_vars), prop_test_data = 0.25, covarReskm = 300,
   max_tries = 2, lab = "species", rndm_occ = TRUE,
