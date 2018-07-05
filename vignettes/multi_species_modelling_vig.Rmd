@@ -52,25 +52,24 @@ As well as adjusting the model parameters, iterations and which models you run f
 ## Example using Multi_mod
 
 ```{r}
-start <- getwd()
+
 data("ng_data")
 data("sd_data")
 data("background")
 setwd(tempdir())
-
 
 #Provide a list of species you wish to model
 sp_list <- c("Notonecta_glauca", "Sigara_dorsalis")
 
 #Organise an Input folder containing your input species files as .csv
 dir.create("Inputs")
-utils::write.csv(ng_data, file = "./Inputs/Notonecta_glauca.csv")
-utils::write.csv(ng_data, file = "./Inputs/Sigara_dorsalis.csv")
+utils::write.csv(ng_data, file = "Inputs/Notonecta_glauca.csv")
+utils::write.csv(sd_data, file = "Inputs/Sigara_dorsalis.csv")
 
 #Organise a folder containing your background masks where your pseudo absences will be generated from.
 dir.create("BGmasks")
 
-save(background, file = "./BGmasks/Hemiptera")
+save(background, file = "BGmasks/Hemiptera")
 
 #Create outputs folder
 dir.create("Outputs")
@@ -99,12 +98,12 @@ vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
 library(JNCCsdms)
 
 #run the function
-#Multi_mod(sp_list = sp_list, vars, out_flder = "Outputs/",dat_flder = "Inputs/", bkgd_flder = "BGmasks/", max_tries = 1, datafrom = "NBNatlas", covarRes = 100, models = c("BioClim", "GLM"), prop_test_data = 0.25, bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE)
+Multi_mod(sp_list = sp_list, vars, out_flder = "Outputs/",dat_flder = "Inputs/", bkgd_flder = "BGmasks/", max_tries = 1, datafrom = "NBNatlas", covarRes = 100, models = c("MaxEnt",
+        "BioClim", "SVM", "RF"), prop_test_data = 0.25, bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE)
 
 
-
-unlink("Outputs", recursive=TRUE)
-setwd(start)
 unlink(tempdir(), recursive=TRUE)
+
+
 ```
 
