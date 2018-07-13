@@ -360,12 +360,11 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         # Collate model evaluations for info
         all_evals <- list(all_evals, as.list(c(aucs, best)))
         close(predict_ff)
-        unlink("D:/Rdata/Rtmpdir/*")
+        unlink("./Rtmpdir/*")
         gc()
 
         out <- list(all_predicts = all_predicts, all_evals = all_evals,
             all_models = all_models)
-
         best_out <- append(best_out, out)
         list2env(best_out, .GlobalEnv)
         tries <- tries + 1
@@ -374,7 +373,6 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
 
     }
     #---------------------Generate model evaluation results-----------------------------#
-
     # Export model evaluation results
     Mean_predict <- Reduce(`+`, all_predicts)/length(all_predicts)
     Mean_predict <- matrix(unlist(Mean_predict[, ]), nrow = nrow(vars[[1]]),
@@ -383,16 +381,17 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
     Models <- c(sort(models), "Best")
     all_evals <- cbind(data.frame(Models), data.frame(matrix(unlist(all_evals),
         nrow = length(models) + 1, byrow = F), stringsAsFactors = FALSE))
-    raster::plot(Mean_predict)
     # beep(0)
     print(proc.time() - ptm)
     pryr::mem_used()
 
+    dir.create(file.path(paste(getwd(), out_flder, sep = "/")), showWarnings = FALSE)
     save(all_models, file = paste(out_flder, lab, tries, "models", sep = ""))
     raster::writeRaster(Mean_predict, file = paste(out_flder, lab, tries,
-        sep = ""), format = "GTiff")
+        sep = ""), format = "GTiff", overwrite = TRUE)
     utils::write.csv(all_evals, file = paste(out_flder, lab, tries, ".csv",
         sep = ""))
+    raster::plot(Mean_predict)
 
     beepr::beep()
 
