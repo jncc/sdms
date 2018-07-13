@@ -9,8 +9,8 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=FALSE, error = FALSE, warning = FALSE}
+knitr::opts_knit$set(echo = TRUE)
 ```
 
 ## Introduction
@@ -55,6 +55,7 @@ When reading in the data, ensure that the header names are kept the same by sett
 Once the data is in, run the bngprep function found in this package to prepare our data into a fit state for modelling. This transforms the data by removing any absence records, records outside of Great Britain (e.g. Northern Ireland), and converts the location given in British National Grid references into easting and northing coordinates. It also allows you to subset the data by specifying a year range with which you wish to extract records between, using the minyear and maxyear arguments.
 
 ```{r}
+
 library(JNCCsdms)
 
 occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom ='NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
@@ -63,6 +64,7 @@ occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom ='NBNatlas'
 The function will update you with how many records were left after subsetting to GB and between your specified years, and if any records were removed due to low resolution (where a minimum data limit has been specified). Once the bngprep function has finished, your data should contain new columns for precision, easting and northing.
 
 ```{r, echo = FALSE}
+
 library(dplyr)
 library(kableExtra)
 
@@ -144,6 +146,7 @@ Important arguments to consider with this function besides these three key eleme
 To run the models call the SDMs() function and the outputs will be returned at your specified location, with the species liklihood based upon the best performing model and the AUC evaluation of each model and model run's performance.
 
 ```{r }
+
 dir.create("Outputs")
 
 
@@ -154,4 +157,7 @@ plot(raster::raster("Outputs/species2.tif"))
 
 ```
 
-
+```{r echo = FALSE}
+unlink('./wc5', recursive = T)
+unlink('./Outputs', recursive = T)
+```
