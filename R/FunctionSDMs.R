@@ -347,7 +347,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
 
         # Project to entire region (GB)
         bestmod <- tryCatch(get(best), error = function(err) NA)
-        prediction_best <- tryCatch(kernlab::predict(vars_drop, bestmod,
+        prediction_best <- tryCatch(raster::predict(vars_drop, bestmod,
             type = "response"), error = function(err) Obs2ras(ppts[c("x",
             "y")]))
 
@@ -374,6 +374,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
     }
     #---------------------Generate model evaluation results-----------------------------#
     # Export model evaluation results
+
     Mean_predict <- Reduce(`+`, all_predicts)/length(all_predicts)
     Mean_predict <- matrix(unlist(Mean_predict[, ]), nrow = nrow(vars[[1]]),
         ncol = ncol(vars[[1]]), byrow = FALSE)
