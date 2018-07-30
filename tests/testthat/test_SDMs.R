@@ -3,11 +3,6 @@
 #### ------------------------------------------------------------####
 context("SDMs tests")
 
-### set working directory for tests
-start <- getwd()
-setwd(tempdir())
-dir.create("Outputs")
-
 
 #### get test data
 
@@ -50,8 +45,5 @@ expect_true(exists("all_predicts") == TRUE)
 
 })
 
-# remove temporary files and return to working directory
+# remove temporary files
 unlink("Outputs", recursive=TRUE)
-setwd(start)
-
-
