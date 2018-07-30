@@ -39,6 +39,10 @@ bngprep <- function(speciesdf, bngCol = "OSGR", precisionCol = "precision", data
         message("unnecessary argument - do not specify precisionCol for data from NBNatlas")
     }
 
+  ## remove any levels so it is just flat data to work with
+  speciesdf <- droplevels(speciesdf)
+
+
     ## Data from the NBNgateway Inital clean to give presence records in GB
     if (datafrom == "NBNgateway") {
         speciesdf <- speciesdf[which(speciesdf$zeroAbundance == "FALSE"),
