@@ -15,7 +15,7 @@
 #'occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
 #'
 #'#run the random occurrences function
-#'randomOcc(presframe = occurrence, precisionCol = 'precision')
+#'randomOcc(presframe = speciesdf, precisionCol = "Coordinate uncertainty (m)")
 #' @export
 
 
@@ -23,6 +23,9 @@ randomOcc <- function(presframe, precisionCol = "precision", lowestResm = 10000,
     covarResm = 1000) {
 
     occurrence <- data.frame()
+
+    if(is.null(nrow(presframe[[precisionCol]])))
+      stop("precision column not found")
 
 
     # Check precision column is numerical, and convert to m
@@ -52,7 +55,12 @@ randomOcc <- function(presframe, precisionCol = "precision", lowestResm = 10000,
             } else {
                 occurrence <- rbind(occurrence, df)
             }
+        } else {
+          occurrence <- presframe
+          message("no jittering required.")
         }
+
     }
+
     return(occurrence)
 }
