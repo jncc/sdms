@@ -154,7 +154,7 @@ bngprep <- function(speciesdf, bngCol = "OSGR", precisionCol = "precision", data
     # If a minimum number of data points has been supplied
     if (!is.na(mindata)) {
         rescount <- table(speciesdf[[precisionCol]])
-        lowpoint <- 0
+        startpoint <- nrow(speciesdf)
         for (j in sort(as.numeric(names(rescount)), decreasing = TRUE)) {
             # sort data by precision, with lowest resolution first
             if (j == covarRes)
@@ -168,12 +168,11 @@ bngprep <- function(speciesdf, bngCol = "OSGR", precisionCol = "precision", data
                 speciesdf <- speciesdf[which(!speciesdf[[precisionCol]] ==
                   j), ]  #cut lowest resolution data
                 rescount[[as.character(j)]] <- NA
-                lowpoint <- lowpoint + 1
             } else {
                 break
             }
         }
     }
-    message(paste(lowpoint), " records with low resolution data points removed")
+    message(paste(startpoint - nrow(speciesdf)), " records with low resolution data points removed")
     return(speciesdf)
 }
