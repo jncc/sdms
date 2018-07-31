@@ -1,4 +1,4 @@
-#' Set up modelling multiple species from NBN gateway or atlas for use in species distribution modelling.
+#' Set up modelling multiple species from NBN gateway or atlas using easting and northings for use in species distribution modelling.
 #'
 #' This function is to carry out modelling of multiple species using the JNCCSdms package.
 #'
@@ -59,11 +59,11 @@
 #'vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
 #'
 #'#run the function
-#'output <- Multi_mod(sp_list = sp_list, vars, out_flder = "Outputs/",dat_flder = "Inputs/", bkgd_flder = "BGmasks/", max_tries = 1, datafrom = "NBNatlas", covarRes = 100, models = "BioClim", prop_test_data = 0.25, bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE)
+#'output <- MultiBNG(sp_list = sp_list, vars, out_flder = "Outputs/",dat_flder = "Inputs/", bkgd_flder = "BGmasks/", max_tries = 1, datafrom = "NBNatlas", covarRes = 100, models = "BioClim", prop_test_data = 0.25, bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE)
 #'@export
 
 
-Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
+MultiBNG <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
     bkgd_flder, vars, max_tries = 1, datafrom = "NBNatlas",
     minyear = 0, maxyear = 0, mindata = 5000, covarRes = 300, models = c("MaxEnt",
         "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"), prop_test_data = 0.25,
@@ -209,7 +209,7 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
             ## run SDM function
             final_out <- SDMs(occ = spdat, varstack = vars, models = models,
                 prop_test_data = prop_test_data, covarReskm = covarRes,
-                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, out_flder = out_flder, bckg = background)
+                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, out_flder = out_flder, bckg = background, coordsys = "bng")
             message(paste(sp, " modelling completed."))
             print("Overall runtime:")
             print(ptm <- proc.time())
@@ -280,7 +280,7 @@ Multi_mod <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
             ## run SDM function
             final_out <- SDMs(occ = spdat, varstack = vars, models = models,
                 prop_test_data = prop_test_data, covarReskm = covarRes,
-                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, bckg = background, out_flder = out_flder)
+                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, bckg = background, out_flder = out_flder, coordsys = "bng")
             ptm <- proc.time()
 
             # stop cluster if parrallel processing
