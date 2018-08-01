@@ -4,11 +4,13 @@
 \alias{randomOcc}
 \title{Place occurrence points at random within low-resolution grid cell}
 \usage{
-randomOcc(presframe, precisionCol = "precision", lowestResm = 10000,
-  covarResm = 1000)
+randomOcc(presframe, coordsys = "bng", precisionCol = "precision",
+  lowestResm = 10000, covarResm = 300)
 }
 \arguments{
 \item{presframe}{Data frame of presence points. This should include columns titled 'easting' and 'northing', which should be x and y coordinates in metres (of the centre of the grid cell for gridded data), as well as a column giving the resolution (see \code{prescisionCol} below).}
+
+\item{coordsys}{The coordinate system used to denote location, either "latlon" for decimal latitude and longitude or "bng" for british national grid easting and northings.}
 
 \item{precisionCol}{The column indicating the resolution of the presence point data. This should be given as a grid cell size in metres e.g. for a 1km grid this should be 1000.}
 
@@ -17,7 +19,7 @@ randomOcc(presframe, precisionCol = "precision", lowestResm = 10000,
 \item{covarResm}{The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.}
 }
 \value{
-A copy of the input dataframe \code{presframe}, with new 'easting' and 'northing' values that place each point randomly within its grid cell.
+A copy of the input dataframe \code{presframe}, with new x and y values that place each point randomly within its grid cell.
 }
 \description{
 This function is used to randomise the location of a presence point where the species occurrence data is low resolution. For example, if your species occurrence data is at 1km resolution, but your environmental predictor variables are at 200m resolution, this enables you to randomise where within the 1km cell your species record is placed. The function can handle multiple resolutions within a single dataframe, as long as these are labelled with a precision column.
@@ -27,8 +29,8 @@ This function is used to randomise the location of a presence point where the sp
 data(ng_data)
 
 #prepare the data using the bngprep function in this package
-occurrence <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
+speciesdf <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
 
 #run the random occurrences function
-randomOcc(presframe = occurrence, precisionCol = 'precision')
+randomOcc(presframe = speciesdf, precisionCol = "precision", coordsys = "bng")
 }

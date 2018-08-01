@@ -8,7 +8,7 @@ SDMs(occ = occurrence, bckg = NULL, varstack = vars,
   models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
   n_bg_points = nrow(pres_vars), prop_test_data = 0.25, covarReskm = 300,
   max_tries = 2, lab = "species", rndm_occ = TRUE,
-  out_flder = "Outputs/")
+  out_flder = "Outputs/", coordsys = "bng")
 }
 \arguments{
 \item{occ}{A SpatialPointsDataFrame of presence points.}
@@ -32,6 +32,8 @@ SDMs(occ = occurrence, bckg = NULL, varstack = vars,
 \item{rndm_occ}{Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.}
 
 \item{out_flder}{The location of the output folder for your models.}
+
+\item{coordsys}{The coordinate system used to denote location, either "latlon" for decimal latitude and longitude or "bng" for british national grid easting and northings.}
 }
 \value{
 A list containing the prediction from the best model (as a raster layer showing probability of species occurrence), the best model evaluation and the best model itself.
@@ -72,5 +74,5 @@ vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
 data(background)
 
 #run the species distribution models
-SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE)
+SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE, coordsys = "bng")
 }
