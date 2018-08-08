@@ -2,12 +2,12 @@
 #'
 #' This function is used to randomise the location of a presence point where the species occurrence data is low resolution. For example, if your species occurrence data is at 1km resolution, but your environmental predictor variables are at 200m resolution, this enables you to randomise where within the 1km cell your species record is placed. The function can handle multiple resolutions within a single dataframe, as long as these are labelled with a precision column.
 #'
-#' @param presframe Data frame of presence points. This should include columns titled 'easting' and 'northing', which should be x and y coordinates in metres (of the centre of the grid cell for gridded data), as well as a column giving the resolution (see \code{prescisionCol} below).
+#' @param presframe Spatial points data frame of presence points. This should include columns titled 'easting' and 'northing', which should be x and y coordinates in metres (of the centre of the grid cell for gridded data), as well as a column giving the resolution (see \code{prescisionCol} below).
 #' @param coordsys The coordinate system used to denote location, either "latlon" for decimal latitude and longitude or "bng" for british national grid easting and northings.
 #' @param precisionCol The column indicating the resolution of the presence point data. This should be given as a grid cell size in metres e.g. for a 1km grid this should be 1000.
 #' @param lowestResm The column indicating the lowest resolution limit for the presence point data in meters. If your presence record is in a higher resolution than this limit, then it will remain at its current state.
 #' @param covarResm The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.
-#' @return A copy of the input dataframe \code{presframe}, with new x and y values that place each point randomly within its grid cell.
+#' @return A copy of the input dataframe \code{presframe} as a spatial points data frame, with new x and y values that place each point randomly within its grid cell.
 #' @examples
 #'# Example using coordinates in British National Grid :
 #'#load in the data
