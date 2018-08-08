@@ -1,6 +1,6 @@
 #' Prepare data from NBN Atlas for use in species distribution modelling.
 #'
-#' This function removes absence data (as the models generate their own pseudo-absences), subset the data based on year and allows modelling of GB and Northern Ireland using latitude and longitude coordinates.
+#' This function removes absence data (as the models generate their own pseudo-absences), subset the data based on year and allows modelling of GB and Northern Ireland using latitude and longitude coordinates. A presence record is assumed to be denoted as "present" by the column "Occurrence status" in NBN Atlas data.
 #'
 #'@param speciesdf Data frame exported from the NBN atlas with data for a species.
 #'@param xCol The column name of the column in \code{speciesdf} giving the species record location as a decimal latitude.
