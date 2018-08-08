@@ -39,6 +39,12 @@ bngprep <- function(speciesdf, bngCol = "OSGR", precisionCol = "precision", data
         message("unnecessary argument - do not specify precisionCol for data from NBNatlas")
     }
 
+  if (!(bngCol %in% colnames(speciesdf))){
+    stop("bngCol not found.")
+  }
+
+  ##----##
+
   ## remove any levels so it is just flat data to work with
   speciesdf <- droplevels(speciesdf)
 
