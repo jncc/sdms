@@ -25,8 +25,20 @@ test_that("model input error when these are incorrectly defined", {
 
 })
 
+test_that("aborted if coordinate system is incorrect", {
+  expect_error(SDMs(occ = ngspdat, max_tries = 1, models = "BioClim", lab = "test", bckg = background, rndm_occ = TRUE, varstack = vars, coordsys = "lat_lon"), "invalid coordinate system")
+
+})
+
 test_that("function places random occurrences when defined as TRUE", {
   expect_condition(SDMs(occ = ngspdat, max_tries = 1, models = "BioClim", lab = "test", bckg = background, rndm_occ = TRUE), "jittering applied.\n")
+
+})
+
+test_that("function stopped if projections dont match up between presence and variable records", {
+  latlong = "+init=epsg:4326"
+  vars2 = projectRaster(vars, crs = latlong)
+  expect_error(SDMs(occ = ngspdat, varstack = vars2, max_tries = 1, models = "BioClim", lab = "test", bckg = background, rndm_occ = TRUE), "check projection, presence points not aligned with variables")
 
 })
 
