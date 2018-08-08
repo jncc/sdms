@@ -5,9 +5,9 @@
 \title{Prepare data from NBN Atlas for use in species distribution modelling.}
 \usage{
 latlonprep(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (WGS84)",
-  precisionCol = "Coordinate uncertainty (m)", paCol = "Occurrence status",
-  yearCol = "Start date year", minyear = 0, maxyear = 0, mindata = 500,
-  covarRes = 300, GBonly = TRUE)
+  precisionCol = "Coordinate uncertainty (m)", yearCol = "Year",
+  minyear = 0, maxyear = 0, mindata = 500, covarRes = 300,
+  GBonly = TRUE)
 }
 \arguments{
 \item{speciesdf}{Data frame exported from the NBN atlas with data for a species.}
@@ -18,8 +18,6 @@ latlonprep(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (WGS84)",
 
 \item{precisionCol}{The column name of the column in \code{speciesdf} denoting the precision of the species record locations. For NBNAtlas this is denoted as the "Coordinate uncertainty (m)". where denoted with km or m, this will be converted into meters.}
 
-\item{paCol}{The column name of the column in \code{speciesdf} denoting whether the species is present or absent.}
-
 \item{yearCol}{The column name in \code{speciesdf} giving the year of the record.}
 
 \item{minyear}{Numeric, the earliest year from which data should be selected. Year inclusive, data older than this will be discarded.}
@@ -28,16 +26,20 @@ latlonprep(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (WGS84)",
 
 \item{mindata}{The target minimum number of data points to return. If this is specified, the lowest resolution data will be discarded if there are enough higher resolution data points available to reach this target.}
 
-\item{covarRes}{The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.
-#'@param GBonly logical, TRUE if you wish to remove Northern Ireland from the records, FALSE if you wish to retain all records.}
+\item{covarRes}{The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.}
+
+\item{GBonly}{logical, TRUE if you wish to remove Northern Ireland from the records, FALSE if you wish to retain all records.}
 }
 \value{
 A copy of \code{speciesdf} as a data frame with absence data removed, subset to your year range and area of interest.
 }
 \description{
-This function removes absence data (as the models generate their own pseudo-absences), allows you to subset the data modelled based on year,
-and allows modelling of GB and Northern Ireland using latitude and longitude coordinates.
+This function removes absence data (as the models generate their own pseudo-absences), subset the data based on year and allows modelling of GB and Northern Ireland using latitude and longitude coordinates. A presence record is assumed to be denoted as "present" by the column "Occurrence status" in NBN Atlas data.
 }
 \examples{
-#test
+data(ng_data)
+names(ng_data)[26] <- "Decimal longitude (WGS84)"
+
+latlonprep(speciesdf = ng_data, xCol = "Decimal latitude (WGS84)", yCol = "Decimal longitude (WGS84)", precisionCol = "Coordinate uncertainty in metres", yearCol = "Year", minyear = 2000, maxyear = 2007, GBonly = TRUE)
+
 }

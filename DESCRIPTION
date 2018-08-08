@@ -14,7 +14,6 @@ Depends: R(>= 2.10.0)
 Imports: stringi,
     sp,
     rgdal,
-    raster,
     rgeos,
     gbm,
     dismo,
@@ -33,7 +32,8 @@ Imports: stringi,
     glmulti,
     utils,
     ggplot2,
-    dplyr
+    dplyr,
+    raster
 Suggests: foreach,
     doParallel,
     testthat, 

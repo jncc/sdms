@@ -42,6 +42,7 @@ A list containing the prediction from the best model (as a raster layer showing 
 This function uses presence points for a species with a background mask to generate pseudo-absences, and then uses these with environmental data layers to generate species distribution models using a range of different model algorithms. The function then selects the best perfoming model and outputs the distribution that that model predicts, an evaluation of the model performance and the model itself.
 }
 \examples{
+# Example using BNG data prep:
 #load in the occurence data
 data(ng_data)
 
@@ -74,5 +75,28 @@ vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
 data(background)
 
 #run the species distribution models
-SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE, coordsys = "bng")
+SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 1, lab = 'species', rndm_occ = TRUE, coordsys = "bng")
+
+
+# Example with lat lon data prep:
+data(ng_data)
+names(ng_data)[26] <- "Decimal longitude (WGS84)"
+
+#preparing the data
+speciesdf <- latlonprep(speciesdf = ng_data, xCol = "Decimal latitude (WGS84)", yCol = "Decimal longitude (WGS84)", precisionCol = "Coordinate uncertainty in metres", yearCol = "Year", minyear = 2000, maxyear = 2007, GBonly = TRUE)
+
+#convert to spatial points data frame
+names(speciesdf)
+yCol = "longitude"
+xCol = "latitude"
+sp::coordinates(speciesdf)<- c(yCol, xCol)
+
+# project the variable layer
+data(vars)
+latlong = "+init=epsg:4326"
+vars = projectRaster(vars, crs = latlong)
+
+#run the model
+SDMs(occ = speciesdf, bckg = NULL, varstack = vars, max_tries = 1, lab = 'species', rndm_occ = FALSE, coordsys = "latlon")
+
 }

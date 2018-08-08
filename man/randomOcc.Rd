@@ -8,7 +8,7 @@ randomOcc(presframe, coordsys = "bng", precisionCol = "precision",
   lowestResm = 10000, covarResm = 300)
 }
 \arguments{
-\item{presframe}{Data frame of presence points. This should include columns titled 'easting' and 'northing', which should be x and y coordinates in metres (of the centre of the grid cell for gridded data), as well as a column giving the resolution (see \code{prescisionCol} below).}
+\item{presframe}{Spatial points data frame of presence points. This should include columns titled 'easting' and 'northing', which should be x and y coordinates in metres (of the centre of the grid cell for gridded data), as well as a column giving the resolution (see \code{prescisionCol} below).}
 
 \item{coordsys}{The coordinate system used to denote location, either "latlon" for decimal latitude and longitude or "bng" for british national grid easting and northings.}
 
@@ -19,18 +19,39 @@ randomOcc(presframe, coordsys = "bng", precisionCol = "precision",
 \item{covarResm}{The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.}
 }
 \value{
-A copy of the input dataframe \code{presframe}, with new x and y values that place each point randomly within its grid cell.
+A copy of the input dataframe \code{presframe} as a spatial points data frame, with new x and y values that place each point randomly within its grid cell.
 }
 \description{
 This function is used to randomise the location of a presence point where the species occurrence data is low resolution. For example, if your species occurrence data is at 1km resolution, but your environmental predictor variables are at 200m resolution, this enables you to randomise where within the 1km cell your species record is placed. The function can handle multiple resolutions within a single dataframe, as long as these are labelled with a precision column.
 }
 \examples{
+# Example using coordinates in British National Grid :
 #load in the data
 data(ng_data)
 
 #prepare the data using the bngprep function in this package
 speciesdf <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom = 'NBNatlas', mindata = 5000, minyear = 2007, covarRes = 300)
 
+#convert to a SpatialPointsDataFrame
+sp::coordinates(speciesdf)<- ~ easting + northing
+
 #run the random occurrences function
 randomOcc(presframe = speciesdf, precisionCol = "precision", coordsys = "bng")
+
+Example using coordinates in latitude and longitude:
+#load in the data
+data(ng_data)
+names(ng_data)[26] <- "Decimal longitude (WGS84)"
+
+#prepare the data using the latlonprep function in this package
+speciesdf <- latlonprep(speciesdf = ng_data, xCol = "Decimal latitude (WGS84)", yCol = "Decimal longitude (WGS84)", precisionCol = "Coordinate uncertainty in metres", yearCol = "Year", minyear = 2000, maxyear = 2007, GBonly = TRUE)
+
+#convert to spatial points data frame
+names(speciesdf)
+yCol = "longitude"
+xCol = "latitude"
+sp::coordinates(speciesdf)<- c(yCol, xCol)
+#run the random occurrences function
+randomOcc(presframe = speciesdf, precisionCol = "precision", coordsys = "latlon")
+
 }
