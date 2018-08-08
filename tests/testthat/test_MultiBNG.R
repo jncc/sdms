@@ -1,4 +1,4 @@
-## Tests to check the functionality of the Package function - Multimod
+## Tests to check the functionality of the Package function - MultiBNG
 #  Becky Trippier 05/06/2018
 #### ----------------------
 
