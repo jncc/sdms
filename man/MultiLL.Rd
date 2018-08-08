@@ -40,9 +40,17 @@ MultiLL(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_flder,
 
 \item{rndm_occ}{Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.}
 
-\item{datafrom}{Whether it is data from the 'NBNgateway' or 'NBNatlas'.}
+\item{GBonly}{logical, TRUE if you wish to remove Northern Ireland from the records, FALSE if you wish to retain all records.}
 
-\item{bngCol}{The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNatlas, this will vary with recorder precision, so you should select the most appropriate for your data, for example 'OSGR 1km', 'OSGR 2km' or 'OSGR 10km'.}
+\item{xCol}{The column name of the column in \code{speciesdf} giving the species record location as a decimal latitude.}
+
+\item{yCol}{The column name of the column in \code{speciesdf} giving the species record location as a decimal longitude.}
+
+\item{precisionCol}{The column name of the column in \code{speciesdf} denoting the precision of the species record locations. For NBNAtlas this is denoted as the "Coordinate uncertainty (m)". where denoted with km or m, this will be converted into meters.}
+
+\item{yearCol}{The column name in \code{speciesdf} giving the year of the record.}
+
+\item{datafrom}{Whether it is data from the 'NBNgateway' or 'NBNatlas'.}
 }
 \value{
 Lists containing predictions from the best models (as a raster layer showing probability of species occurrence), the best model evaluations and the best model itself for each species in a given species list.

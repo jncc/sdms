@@ -15,9 +15,13 @@
 #'@param covarRes The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.
 #'@param models A character vector of the models to run and evaluate. This should be at least one of \code{'MaxEnt'}, \code{'BioClim'}, \code{'SVM'}, \code{'RF'}, \code{'GLM'}, \code{'GAM'}, \code{'BRT'}. Default is to run all models.
 #'@param prop_test_data Numeric, the proportion of data to keep back as testing data for evaluating the models. Default is 25\%.
-#'@param bngCol The column name of the column in \code{speciesdf} giving the species record location as a BNG grid reference. For NBNatlas, this will vary with recorder precision, so you should select the most appropriate for your data, for example 'OSGR 1km', 'OSGR 2km' or 'OSGR 10km'.
 #'@param mult_prssr Set up a parallel backend to use multiple processors. As a default this is turned off. Need to ensure the suggested packages have been loaded in order to run this.
 #'@param rndm_occ Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.
+#'@param GBonly logical, TRUE if you wish to remove Northern Ireland from the records, FALSE if you wish to retain all records.
+#'@param xCol The column name of the column in \code{speciesdf} giving the species record location as a decimal latitude.
+#'@param yCol The column name of the column in \code{speciesdf} giving the species record location as a decimal longitude.
+#'@param precisionCol The column name of the column in \code{speciesdf} denoting the precision of the species record locations. For NBNAtlas this is denoted as the "Coordinate uncertainty (m)". where denoted with km or m, this will be converted into meters.
+#'@param yearCol The column name in \code{speciesdf} giving the year of the record.
 #'@return Lists containing predictions from the best models (as a raster layer showing probability of species occurrence), the best model evaluations and the best model itself for each species in a given species list.
 #'@examples
 #'#Provide a list of species you wish to model
