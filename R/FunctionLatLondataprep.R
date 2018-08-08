@@ -1,27 +1,31 @@
 #' Prepare data from NBN Atlas for use in species distribution modelling.
 #'
-#' This function removes absence data (as the models generate their own pseudo-absences), allows you to subset the data modelled based on year,
-#' and allows modelling of GB and Northern Ireland using latitude and longitude coordinates.
+#' This function removes absence data (as the models generate their own pseudo-absences), subset the data based on year and allows modelling of GB and Northern Ireland using latitude and longitude coordinates.
 #'
 #'@param speciesdf Data frame exported from the NBN atlas with data for a species.
 #'@param xCol The column name of the column in \code{speciesdf} giving the species record location as a decimal latitude.
 #'@param yCol The column name of the column in \code{speciesdf} giving the species record location as a decimal longitude.
 #'@param precisionCol The column name of the column in \code{speciesdf} denoting the precision of the species record locations. For NBNAtlas this is denoted as the "Coordinate uncertainty (m)". where denoted with km or m, this will be converted into meters.
-#'@param paCol The column name of the column in \code{speciesdf} denoting whether the species is present or absent.
 #'@param yearCol The column name in \code{speciesdf} giving the year of the record.
 #'@param minyear Numeric, the earliest year from which data should be selected. Year inclusive, data older than this will be discarded.
 #'@param maxyear Numeric, the latest year from which data should be used. Year inclusive, data newer than this will be discarded.
 #'@param mindata The target minimum number of data points to return. If this is specified, the lowest resolution data will be discarded if there are enough higher resolution data points available to reach this target.
 #'@param covarRes The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.
-#'#'@param GBonly logical, TRUE if you wish to remove Northern Ireland from the records, FALSE if you wish to retain all records.
+#'@param GBonly logical, TRUE if you wish to remove Northern Ireland from the records, FALSE if you wish to retain all records.
 
 #'@return A copy of \code{speciesdf} as a data frame with absence data removed, subset to your year range and area of interest.
 #'@examples
+#'data(ng_data)
+#'names(ng_data)[26] <- "Decimal longitude (WGS84)"
+#'
+#'latlonprep(speciesdf = ng_data, xCol = "Decimal latitude (WGS84)", yCol = "Decimal longitude (WGS84)", precisionCol = "Coordinate uncertainty in metres", yearCol = "Year", minyear = 2000, maxyear = 2007, GBonly = TRUE)
+#'
 #'@export
 
-latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (WGS84)", precisionCol = "Coordinate uncertainty (m)",
-                    paCol = "Occurrence status",  yearCol = "Start date year", minyear = 0, maxyear = 0, mindata = 500,
-                    covarRes = 300, GBonly = TRUE) {
+latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (WGS84)",
+                       precisionCol = "Coordinate uncertainty (m)",
+                       yearCol = "Year", minyear = 0, maxyear = 0, mindata = 500,
+                       covarRes = 300, GBonly = TRUE) {
 
 
 
@@ -34,7 +38,17 @@ latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (
   if (maxyear != 0 & maxyear < minyear)
     stop("minimum year limit is greater than maximum year")
 
+  if (!(xCol %in% colnames(speciesdf)) | !(yCol %in% colnames(speciesdf))){
+    stop("check x and y column names")
+    }
+  if (!(yearCol %in% colnames(speciesdf))){
+    stop("year column  not found")
+  }
+  if (!(precisionCol %in% colnames(speciesdf))){
+    stop("precision column  not found")
+  }
 
+  ##--------------------------##
 
   ## remove any levels so it is just flat data to work with
   speciesdf <- droplevels(speciesdf)
@@ -44,13 +58,18 @@ latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (
   ## also subset records by bngCol as varying precisions for Grid
   ## References
 
-  speciesdf <- speciesdf[speciesdf[[paCol]] == "present",
+  speciesdf <- speciesdf[speciesdf$`Occurrence status` == "present",
                          ]  # remove absence data
 
   speciesdf <- speciesdf[grepl("[[:alnum:]]", speciesdf[[xCol]]),
                          ]  #select rows with gridref records
   speciesdf <- speciesdf[grepl("[[:alnum:]]", speciesdf[[yCol]]),
                          ]  #select rows with gridref records
+
+   if (nrow(speciesdf) == 0){
+    stop("no presence records found")
+  }
+
 
 #rename yearCol to year
   names(speciesdf)[names(speciesdf) == yearCol] <- "year"
@@ -67,6 +86,9 @@ latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (
     speciesdf <- speciesdf
   }
 
+  if (nrow(speciesdf) == 0){
+    stop("no presence records found within year range")
+  }
 
   # Check precision column is numerical, and convert to m
   if (!is.numeric(speciesdf[[precisionCol]])) {
@@ -82,6 +104,11 @@ latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (
   }
 
 # find GB and Ireland
+  speciesdf$GB  <- NA
+
+
+  raster::rasterOptions(tmpdir = "./Rtmpdir")
+
   GB <- raster::getData('GADM', country="gbr", level=2)
   GB_sub <- raster::subset(GB, NAME_1 != "Northern Ireland")
   IR_sub <- raster::subset(GB, NAME_1 == "Northern Ireland")
@@ -91,7 +118,7 @@ latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (
 
 
   #highlight GB or Ireland
-  speciesdf$GB  <- NA
+
   IRxmin <- IRextent@ymin
   IRxmax <- IRextent@ymax
   IRymin <- IRextent@xmin
@@ -104,6 +131,8 @@ latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (
       speciesdf$GB[i] <- "GB"
     }
   }
+  unlink("./Rtmpdir/*")
+
 
 
   #subset to GB
@@ -140,6 +169,7 @@ latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (
     message(paste(startpoint - nrow(speciesdf)), " records with low resolution data points removed"
 )
   }
+
   names(speciesdf)[which(names(speciesdf) == precisionCol)] <-"precision"
   names(speciesdf)[which(names(speciesdf) == xCol)] <-"latitude"
   names(speciesdf)[which(names(speciesdf) == yCol)] <-"longitude"
