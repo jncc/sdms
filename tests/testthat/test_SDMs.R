@@ -26,7 +26,7 @@ test_that("model input error when these are incorrectly defined", {
 })
 
 test_that("function places random occurrences when defined as TRUE", {
-  expect_condition(SDMs(occ = ngspdat, max_tries = 1, models = "BioClim", lab = "test", bckg = background, rndm_occ = TRUE), "Random occurrences placed")
+  expect_condition(SDMs(occ = ngspdat, max_tries = 1, models = "BioClim", lab = "test", bckg = background, rndm_occ = TRUE), "jittering applied.\n")
 
 })
 
