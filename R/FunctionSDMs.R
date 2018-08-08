@@ -13,8 +13,10 @@
 #' @param lab The name of the output files.
 #' @param rndm_occ Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.
 #' @param out_flder The location of the output folder for your models.
+#' @param coordsys The coordinate system used to denote location, either "latlon" for decimal latitude and longitude or "bng" for british national grid easting and northings.
 #' @return A list containing the prediction from the best model (as a raster layer showing probability of species occurrence), the best model evaluation and the best model itself.
 #' @examples
+#'# Example using BNG data prep:
 #'#load in the occurence data
 #'data(ng_data)
 #'
@@ -47,13 +49,36 @@
 #'data(background)
 #'
 #'#run the species distribution models
-#'SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE)
+#'SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 1, lab = 'species', rndm_occ = TRUE, coordsys = "bng")
+#'
+#'
+#'# Example with lat lon data prep:
+#'data(ng_data)
+#'names(ng_data)[26] <- "Decimal longitude (WGS84)"
+#'
+#'#preparing the data
+#'speciesdf <- latlonprep(speciesdf = ng_data, xCol = "Decimal latitude (WGS84)", yCol = "Decimal longitude (WGS84)", precisionCol = "Coordinate uncertainty in metres", yearCol = "Year", minyear = 2000, maxyear = 2007, GBonly = TRUE)
+#'
+#'#convert to spatial points data frame
+#'names(speciesdf)
+#'yCol = "longitude"
+#'xCol = "latitude"
+#'sp::coordinates(speciesdf)<- c(yCol, xCol)
+#'
+#'# project the variable layer
+#'data(vars)
+#'latlong = "+init=epsg:4326"
+#'vars = projectRaster(vars, crs = latlong)
+#'
+#'#run the model
+#'SDMs(occ = speciesdf, bckg = NULL, varstack = vars, max_tries = 1, lab = 'species', rndm_occ = FALSE, coordsys = "latlon")
+#'
 #' @export
 
 SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
     models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
     n_bg_points = nrow(pres_vars), prop_test_data = 0.25, covarReskm = 300,
-    max_tries = 2, lab = "species", rndm_occ = TRUE, out_flder = "Outputs/") {
+    max_tries = 2, lab = "species", rndm_occ = TRUE, out_flder = "Outputs/", coordsys = "bng") {
 
     all_predicts <- NULL
     all_models <- NULL
@@ -66,7 +91,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
 
     #---------------------initial checks ----------------------------------------------#
     # max tries check - if user answers n then it terminates
-    mt_response = "NA"
+    mt_response <- "NA"
     if (max_tries > 100) {
       mt_response <- readline(paste("max tries =", max_tries, ". Are you sure you wish to continue? y or n?  "))
     } else {
@@ -95,10 +120,9 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         #---------------------generate random occurrences ---------------------------------------------#
 
         if (rndm_occ == TRUE) {
-            occurrence <- raster::as.data.frame(occ)
-            occurrence <- randomOcc(presframe = occurrence, precisionCol = "precision")
-            pres.pts <- data.frame(occurrence[, c("easting", "northing")])
-            sp::coordinates(occurrence) <- ~easting + northing
+            occurrence <- randomOcc(presframe = occ, covarResm = covarReskm,
+                                    coordsys = coordsys)
+            pres.pts <- as.data.frame(sp::coordinates(occurrence))
             message("Random occurrences placed.")
         } else {
             pres.pts <- as.data.frame(sp::coordinates(occ))
@@ -125,7 +149,13 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         colnames(ppts) <- c("x", "y")
         pres_vars <- data.frame(cbind(unique(ppts), raster::extract(varstack,
             unique(ppts))))  #length (which (is.na (pres_vars$bio1)))
+
         pres_vars <- pres_vars[stats::complete.cases(pres_vars), ]  #Remove any NA lines
+
+         if(nrow(pres_vars) == 0){
+          stop("check projection, presence points not aligned with variables")
+        }
+
         pres_vars$Presence <- 1
         bg.pts <- dismo::randomPoints(mask = bckg, n = n_bg_points, p = ppts,
             tryf = 50)
