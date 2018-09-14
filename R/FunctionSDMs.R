@@ -98,7 +98,9 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
       mt_response <- "y"
     }
     if (mt_response == "n") stop("Operation terminated.")
-
+    if ("RF" %in% models){
+      RFimp <- NULL
+    }
 
     while (tries < max_tries) {
         raster::rasterOptions(tmpdir = "./Rtmpdir")
@@ -284,6 +286,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
                   paste(varfactors, collapse = "+"))), data = combo_train[,
                   3:ncol(combo_train)], na.action = stats::na.omit), error = function(err) NA)
             }
+            imp <- as.data.frame(importance(RF, scale = TRUE))
             eval_test <- tryCatch(dismo::evaluate(presence_test[, 3:ncol(presence_test)],
                 bg_test[, 3:ncol(bg_test)], RF), error = function(err) {
                 tryCatch(eval(presence_test[, 3:ncol(presence_test)],
@@ -389,6 +392,10 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         all_models <- append(all_models, list(bestmod))
         # Collate model evaluations for info
         all_evals <- list(all_evals, as.list(c(aucs, best)))
+        # Compile random forest variable importances
+        if (exists("imp") ==TRUE){
+          RFimp <- append(RFimp,imp)
+        }
         close(predict_ff)
         unlink("./Rtmpdir/*")
         gc()
@@ -397,6 +404,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
             all_models = all_models)
         best_out <- append(best_out, out)
         list2env(best_out, .GlobalEnv)
+        list2env(RFimp)
         tries <- tries + 1
         message("Run ", tries, " completed.")
         try(print(c(tries, all_evals[[2]][[8]])), silent = TRUE)

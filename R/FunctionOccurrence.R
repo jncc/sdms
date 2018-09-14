@@ -55,8 +55,8 @@ randomOcc <- function(presframe, coordsys = "bng",
    if (coordsys == "latlon") {
       ukgrid = "+init=epsg:27700"
       latlong = "+init=epsg:4326"
-      proj4string(presframe) <- sp::CRS(latlong)
-      presframe <- spTransform(presframe, CRS(ukgrid))
+      sp::proj4string(presframe) <- sp::CRS(latlong)
+      presframe <- sp::spTransform(presframe, sp::CRS(ukgrid))
       presframe <- raster::as.data.frame(presframe)
       names(presframe)[which(names(presframe) == "longitude")] <-"easting"
       names(presframe)[which(names(presframe) == "latitude")] <-"northing"
@@ -111,8 +111,8 @@ randomOcc <- function(presframe, coordsys = "bng",
       sp::coordinates(occurrence) <- ~easting + northing
   } else {
         sp::coordinates(occurrence)<- ~longitude + latitude
-        proj4string(occurrence) <- sp::CRS(ukgrid)
-        occurrence <- spTransform(occurrence, CRS(latlong))
+        sp::proj4string(occurrence) <- sp::CRS(ukgrid)
+        occurrence <- sp::spTransform(occurrence, sp::CRS(latlong))
 
   }
 
