@@ -3,12 +3,14 @@ title: "Multi_species_modelling_vig"
 author: "Becky Trippier"
 date: "29 June 2018"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+
+knitr::opts_knit$set(echo = TRUE, self.contained = FALSE)
 
 ```
 
@@ -56,7 +58,6 @@ As well as adjusting the model parameters, iterations and which models you run f
 
 ```{r }
 
-knitr::opts_chunk$set(root.dir = normalizePath(".."))  
 data("ng_data")
 data("sd_data")
 data("background")
@@ -101,10 +102,9 @@ vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
 library(JNCCsdms)
 
 #run the function
-Multi_mod(sp_list = sp_list, vars, out_flder = "Outputs/",dat_flder = "Inputs/", bkgd_flder = "BGmasks/", max_tries = 1, datafrom = "NBNatlas", covarRes = 100, models = c("MaxEnt",
-        "BioClim", "SVM", "RF"), prop_test_data = 0.25, bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE)
+#Multi_mod(sp_list = sp_list, vars, out_flder = "Outputs/",dat_flder = "Inputs/", bkgd_flder = "BGmasks/", max_tries = 1, datafrom = "NBNatlas", covarRes = 100, models = c("MaxEnt","BioClim", "SVM", "RF"), prop_test_data = 0.25, bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE)
 
-raster::plot(Mean_predict)
+#raster::plot(Mean_predict)
 
 
 ```
