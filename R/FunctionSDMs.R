@@ -49,7 +49,7 @@
 #'data(background)
 #'
 #'#run the species distribution models
-#'SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 1, lab = 'species', rndm_occ = TRUE, coordsys = "bng")
+#'SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE, coordsys = "bng")
 #'
 #'
 #'# Example with lat lon data prep:
@@ -394,17 +394,21 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         all_evals <- list(all_evals, as.list(c(aucs, best)))
         # Compile random forest variable importances
         if ("RF" %in% models){
-          RFimp <- append(RFimp,imp)
+          RFimp <- rbind(RFimp,imp)
         }
         close(predict_ff)
         unlink("./Rtmpdir/*")
         gc()
 
+        if ("RF" %in% models){
         out <- list(all_predicts = all_predicts, all_evals = all_evals,
-            all_models = all_models)
+            all_models = all_models, RFimp = RFimp)
+        } else{
+        out <- list(all_predicts = all_predicts, all_evals = all_evals,
+                      all_models = all_models)
+        }
         best_out <- append(best_out, out)
         list2env(best_out, .GlobalEnv)
-        list2env(RFimp)
         tries <- tries + 1
         message("Run ", tries, " completed.")
         try(print(c(tries, all_evals[[2]][[8]])), silent = TRUE)
