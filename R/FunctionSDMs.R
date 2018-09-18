@@ -286,7 +286,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
                   paste(varfactors, collapse = "+"))), data = combo_train[,
                   3:ncol(combo_train)], na.action = stats::na.omit), error = function(err) NA)
             }
-            imp <- as.data.frame(importance(RF, scale = TRUE))
+            imp <- as.data.frame(randomForest::importance(RF, scale = TRUE))
             eval_test <- tryCatch(dismo::evaluate(presence_test[, 3:ncol(presence_test)],
                 bg_test[, 3:ncol(bg_test)], RF), error = function(err) {
                 tryCatch(eval(presence_test[, 3:ncol(presence_test)],
@@ -393,7 +393,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         # Collate model evaluations for info
         all_evals <- list(all_evals, as.list(c(aucs, best)))
         # Compile random forest variable importances
-        if (exists("imp") ==TRUE){
+        if ("RF" %in% models){
           RFimp <- append(RFimp,imp)
         }
         close(predict_ff)
