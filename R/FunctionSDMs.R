@@ -68,7 +68,7 @@
 #'# project the variable layer
 #'data(vars)
 #'latlong = "+init=epsg:4326"
-#'vars = projectRaster(vars, crs = latlong)
+#'vars = raster::projectRaster(vars, crs = latlong)
 #'
 #'#run the model
 #'SDMs(occ = speciesdf, bckg = NULL, varstack = vars, max_tries = 1, lab = 'species', rndm_occ = FALSE, coordsys = "latlon")
@@ -110,7 +110,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
 
 
     if (is.null(bckg)){
-      r <- vars[[1]]
+      r <- varstack[[1]]
     r[!is.na(r[])] <- 1
     background <- r
     bckg <- background
@@ -161,7 +161,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         pres_vars$Presence <- 1
         bg.pts <- dismo::randomPoints(mask = bckg, n = n_bg_points, p = ppts,
             tryf = 50)
-        bg_vars <- data.frame(cbind(bg.pts, raster::extract(vars, bg.pts)))
+        bg_vars <- data.frame(cbind(bg.pts, raster::extract(varstack, bg.pts)))
         bg_vars <- bg_vars[stats::complete.cases(bg_vars), ]  #Remove any NA lines
         bg_vars$Presence <- 0
         # Combine presence and pseudo absence training data
@@ -299,7 +299,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         # GLM - regression presence-absence (attempts glm selectionfirst, but
         # if too many predictors does full model glm)
         if ("GLM" %in% models) {
-            glm_multi <- tryCatch(do.call(glmulti::glmulti, list(y = "Presence",
+            glm_multi <- tryCatch(do.call("glmulti", list(y = "Presence",
                 xr = varfactors, family = "binomial", data = combo_train[,
                   3:ncol(combo_train)], na.action = stats::na.omit, level = 1,
                 method = "g", confsetsize = 1, deltaB = 0, conseq = 1,
@@ -371,7 +371,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         Obs2ras <- function(points, raskm = covarReskm) {
             # nr <- 1250 / raskm nc <- 700 / raskm r <- raster::raster(nrows = nr,
             # ncols = nc, xmn = 0, xmx= 700000, ymn = 0, ymx = 1250000)
-            r <- vars[[1]]
+            r <- varstack[[1]]
             r[!is.na(r[])] <- 0
             i <- raster::extract(r, points, cellnumbers = TRUE)[, "cells"]
             r[i] <- 1
@@ -418,9 +418,9 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
     # Export model evaluation results
 
     Mean_predict <- Reduce(`+`, all_predicts)/length(all_predicts)
-    Mean_predict <- matrix(unlist(Mean_predict[, ]), nrow = nrow(vars[[1]]),
-        ncol = ncol(vars[[1]]), byrow = FALSE)
-    Mean_predict <- raster::setValues(vars[[1]], Mean_predict)
+    Mean_predict <- matrix(unlist(Mean_predict[, ]), nrow = nrow(varstack[[1]]),
+        ncol = ncol(varstack[[1]]), byrow = FALSE)
+    Mean_predict <- raster::setValues(varstack[[1]], Mean_predict)
     Models <- c(sort(models), "Best")
     all_evals <- cbind(data.frame(Models), data.frame(matrix(unlist(all_evals),
         nrow = length(models) + 1, byrow = F), stringsAsFactors = FALSE))
