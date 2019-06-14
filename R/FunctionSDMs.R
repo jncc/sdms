@@ -71,7 +71,7 @@
 #'vars = raster::projectRaster(vars, crs = latlong)
 #'
 #'#run the model
-#'SDMs(occ = speciesdf, bckg = NULL, varstack = vars, max_tries = 1, lab = 'species', rndm_occ = FALSE, coordsys = "latlon")
+#'SDMs(occ = speciesdf, bckg = NULL, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = FALSE, coordsys = "latlon")
 #'
 #' @export
 
@@ -88,6 +88,14 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
     ptm <- proc.time()
     best_out <- c()
 
+
+    list.factors <- names(varstack)[is.factor(varstack)]
+    lvls <- NULL
+    if(length(list.factors)>=1){
+    for(i in 1:length(list.factors)){
+      lvls[[list.factors[i]]] <- levels(varstack[[list.factors[i]]])[[1]]
+    }
+    }
 
     #---------------------initial checks ----------------------------------------------#
     # max tries check - if user answers n then it terminates
@@ -159,7 +167,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         }
 
         pres_vars$Presence <- 1
-        bg.pts <- dismo::randomPoints(mask = bckg, n = n_bg_points, p = ppts,
+        bg.pts <- dismo::randomPoints(mask = bckg, n = 1000, p = ppts,
             tryf = 50)
         bg_vars <- data.frame(cbind(bg.pts, raster::extract(varstack, bg.pts)))
         bg_vars <- bg_vars[stats::complete.cases(bg_vars), ]  #Remove any NA lines
@@ -200,6 +208,25 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
             vars_drop <- varstack
         }
         varfactors <- names(combo_vars[, 3:(ncol(combo_vars) - 1)])
+
+        if(!is.null(lvls)){
+        for(j in 1:length(lvls)){
+          if(names(lvls)[j] %in% colnames(combo_train)){
+            combo_train[,names(lvls)[j]] <- factor(combo_train[,names(lvls)[j]], levels=lvls[[names(lvls)[j]]][[1]])
+          }
+          if(names(lvls)[j] %in% colnames(combo_vars)){
+            combo_vars[,names(lvls)[j]] <- factor(combo_vars[,names(lvls)[j]], levels=lvls[[names(lvls)[j]]][[1]])
+          }
+          if(names(lvls)[j] %in% colnames(presence_test)){
+            presence_test[,names(lvls)[j]] <- factor(presence_test[,names(lvls)[j]], levels=lvls[[names(lvls)[j]]][[1]])
+          }
+          if(names(lvls)[j] %in% colnames(bg_test)){
+            bg_test[,names(lvls)[j]] <- factor(bg_test[,names(lvls)[j]], levels=lvls[[names(lvls)[j]]][[1]])
+          }
+        }
+        }
+
+
 
         #---------------------Define models and evaluate using test data---------------------------------------------------#
 
@@ -388,6 +415,8 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         predict_ff <- ff::ff(raster::as.matrix(prediction_best))
         # Add to list of previous runs
         all_predicts <- append(all_predicts, list(predict_ff))
+        close(predict_ff)
+
         # Add to list of best full models
         all_models <- append(all_models, list(bestmod))
         # Collate model evaluations for info
@@ -396,7 +425,6 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         if ("RF" %in% models){
           RFimp <- rbind(RFimp,imp)
         }
-        close(predict_ff)
         unlink("./Rtmpdir/*")
         gc()
 
@@ -417,9 +445,9 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
     #---------------------Generate model evaluation results-----------------------------#
     # Export model evaluation results
 
-    Mean_predict <- Reduce(`+`, all_predicts)/length(all_predicts)
-    Mean_predict <- matrix(unlist(Mean_predict[, ]), nrow = nrow(varstack[[1]]),
-        ncol = ncol(varstack[[1]]), byrow = FALSE)
+    Mean_predict <- Reduce(`+`, lapply(all_predicts, ff::as.ram))/length(all_predicts)
+    Mean_predict <- matrix(Mean_predict, nrow = nrow(varstack[[1]]),
+                           ncol = ncol(varstack[[1]]), byrow = FALSE)
     Mean_predict <- raster::setValues(varstack[[1]], Mean_predict)
     Models <- c(sort(models), "Best")
     all_evals <- cbind(data.frame(Models), data.frame(matrix(unlist(all_evals),
