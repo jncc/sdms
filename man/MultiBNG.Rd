@@ -4,11 +4,12 @@
 \alias{MultiBNG}
 \title{Set up modelling multiple species from NBN gateway or atlas using easting and northings for use in species distribution modelling.}
 \usage{
-MultiBNG(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_flder,
-  vars, max_tries = 1, datafrom = "NBNatlas", minyear = 0, maxyear = 0,
-  mindata = 5000, covarRes = 300, models = c("MaxEnt", "BioClim", "SVM",
-  "RF", "GLM", "GAM", "BRT"), prop_test_data = 0.25, bngCol = "OSGR",
-  mult_prssr = FALSE, rndm_occ = TRUE)
+MultiBNG(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
+  bkgd_flder, vars, max_tries = 1, datafrom = "NBNatlas",
+  minyear = 0, maxyear = 0, mindata = 5000, covarRes = 300,
+  models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
+  prop_test_data = 0.25, bngCol = "OSGR", mult_prssr = FALSE,
+  rndm_occ = TRUE)
 }
 \arguments{
 \item{sp_list}{List of unique species names which you wish to model.}

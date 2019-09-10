@@ -1,5 +1,5 @@
 ---
-title: "Multi_species_modelling_vig"
+title: "Multi species modelling"
 author: "Becky Trippier"
 date: "29 June 2018"
 output:
@@ -16,9 +16,11 @@ knitr::opts_knit$set(echo = TRUE, self.contained = FALSE)
 
 ## Introduction
 
-JNCC has produced species distribution model functions designed to be used with presence records from the NBN Atlas <https://nbnatlas.org/>, previously the NBN Gateway. The format of data from the NBN Gateway and NBN Atlas differ, which is why the 'datafrom' field must be specified when preparing the data using the bngprep function. The Multi_mod() function is designed to automate the species distribution modelling process when running models for multiple species. By specifying the folders containing the relevant data and the arguments for use in the SDMs() function, the Multi_mod function can iterate through each species in a supplied species list until all of these have been processed.
+JNCC has produced species distribution model functions designed to be used with presence records from the NBN Atlas <https://nbnatlas.org/>, previously the NBN Gateway. 
 
-As well as presence points, the models expect an input of a RasterStack of environmental parameters, to be used as the predictor variables for which species range will be assessed. It also allows you to include a background mask for the species, from which the pseudo-absence points will be generated. The ensemble model is customisable allowing you to run any of the following common species distribution models: 
+The functions MultiBNG() and MultiLL() are designed to automate the species distribution modelling process when running models for multiple species. By specifying the folders containing the relevant data and the arguments for use in the SDMs() function, the Multi_mod function can iterate through each species in a supplied species list until all of these have been processed. As well as this it can also use parallel processing, set through the 'mult_prssr' argument to run different species models in parallel.
+
+The workflow will prepare the data based on the type of coordinates used (latlon vs bng). As with the single species modelling (see 'single species modelling' vignette), this can incorporate the random occurrence function for low resolution data and will create pseudo-absence points from a supplied mask. The points are then assessed against the environmental predictors in a supplied RasterStack. The ensemble model is customisable allowing you to run any of the following common species distribution models: 
 
 * MaxEnt - Maximum Entropy model - see maxent{dismo}
 
@@ -34,15 +36,15 @@ As well as presence points, the models expect an input of a RasterStack of envir
 
 * BRT - Boosted Regeresstion Trees - see gbm.step{dismo}
 
-You can also specify how many times you would like each model to run, the proportion of your testing data you wish to use in evaluating model performance, and whether you wish to  randomise the locations of presence points when the species occurrence data is of a low resolution (through use of the randomOcc function).
+You can also specify how many times you would like each model to run and the proportion of your testing data you wish to use in evaluating model performance.
 
 
 The function will select the best performing model for each species and return the model itself, the distribution that the model predicted as a GTiff file, and a csv file containing the evaluations of each model's performance for each time it was run for every species. These are returned in the folder specified in the outputs argument of the function.
 
 
-## Modelling with Multi_mod
+## Modelling using the multi-species functions
 
-The main difference between the multi_mod function and the sdms function is that the multi_mod is designed to automatically iterate through multiple species with minimal user input. Before using the function you will need the prepare:
+The main difference between the multiple species functions 'MultiLL' and 'MultiBNG' and the sdms function is that these are designed to automatically iterate through multiple species with minimal user input. Before using the function you will need the prepare:
 
 1. The dat_flder - A folder containing your species presence records.These should be as txt or csv files exported from NBN gateway or NBN atlas. Each file should contain data for a single species and the naming convention should correspond to your species list in order to be recognised. e.g. 'Triturus cristatus' in the sp_list should have a corresponding data file named 'Triturus cristatus.csv' in the dat_folder.
 
@@ -54,7 +56,7 @@ The main difference between the multi_mod function and the sdms function is that
 
 As well as adjusting the model parameters, iterations and which models you run for each species, the function also lets you set whether to process using multiple processors. This helps to prevent overloading your machine by calling functions form the Parallel package to set up parallel processing whilst the models are running.
 
-## Example using Multi_mod
+## Example using Multi_BNG
 
 ```{r }
 
@@ -66,17 +68,23 @@ data("background")
 sp_list <- c("Notonecta_glauca", "Sigara_dorsalis")
 
 #Organise an Input folder containing your input species files as .csv
-dir.create("Inputs")
+if (!file.exists("Inputs")){
+  dir.create("Inputs")
+}
 utils::write.csv(ng_data, file = "Inputs/Notonecta_glauca.csv")
 utils::write.csv(sd_data, file = "Inputs/Sigara_dorsalis.csv")
 
 #Organise a folder containing your background masks where your pseudo absences will be generated from.
-dir.create("BGmasks")
+if (!file.exists("BGmasks")){
+ dir.create("BGmasks")
+}
 
 save(background, file = "BGmasks/Hemiptera")
 
 #Create outputs folder
-dir.create("Outputs")
+if (!file.exists("Outputs")){
+  dir.create("Outputs")
+}
 
 # Preparing the variables data using worldclim
 #get UK extent
@@ -96,15 +104,13 @@ names(bio) <- c("Temp","Prec")
 bio<-raster::crop(bio,extent)
 
 #convert to easting northing
-vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
+vars <- raster::projectRaster(bio,crs=raster::crs("+init=epsg:27700"))
 
 #load the package
 library(JNCCsdms)
 
 #run the function
-#Multi_mod(sp_list = sp_list, vars, out_flder = "Outputs/",dat_flder = "Inputs/", bkgd_flder = "BGmasks/", max_tries = 1, datafrom = "NBNatlas", covarRes = 100, models = c("MaxEnt","BioClim", "SVM", "RF"), prop_test_data = 0.25, bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE)
-
-#raster::plot(Mean_predict)
+MultiBNG(sp_list = sp_list, vars, out_flder = "Outputs/",dat_flder = "Inputs/", bkgd_flder = "BGmasks/", max_tries = 1, datafrom = "NBNatlas", covarRes = 100, models = c("MaxEnt","BioClim", "SVM", "RF"), prop_test_data = 0.25, bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE)
 
 
 ```

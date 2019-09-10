@@ -15,7 +15,7 @@ bngprep(speciesdf, bngCol = "OSGR", precisionCol = "precision",
 
 \item{precisionCol}{The column name of the column in \code{speciesdf} denoting the precision of the species record locations. This only needs to be specified for NBNgateway data as this is generated from the selected \code{bngCol} for data from the NBNatlas.}
 
-\item{datafrom}{Character, one of 'NBNgateway' or 'NBNatlas', indicating the data source.'NBNatlas' is the default.}
+\item{datafrom}{Character, one of 'NBNgateway' or 'NBNatlas', indicating the data source.'NBNatlas' is the default.The format of data from the NBN Gateway and NBN Atlas differ, which is why the 'datafrom' field must be specified when preparing the data using the bngprep function.}
 
 \item{minyear}{Numeric, the earliest year from which data should be selected. Year inclusive, data older than this will be discarded.}
 

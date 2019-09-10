@@ -4,11 +4,12 @@
 \alias{MultiLL}
 \title{Set up modelling multiple species from NBN atlas using locations given in latitude and longitude for use in species distribution modelling.}
 \usage{
-MultiLL(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_flder,
-  vars, max_tries = 1, minyear = 0, maxyear = 0, mindata = 5000,
-  covarRes = 300, models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM",
-  "BRT"), prop_test_data = 0.25, mult_prssr = FALSE, rndm_occ = TRUE,
-  GBonly = TRUE, xCol = "Latitude (WGS84)", yCol = "Longitude (WGS84)",
+MultiLL(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
+  bkgd_flder, vars, max_tries = 1, minyear = 0, maxyear = 0,
+  mindata = 5000, covarRes = 300, models = c("MaxEnt", "BioClim",
+  "SVM", "RF", "GLM", "GAM", "BRT"), prop_test_data = 0.25,
+  mult_prssr = FALSE, rndm_occ = TRUE, GBonly = TRUE,
+  xCol = "Latitude (WGS84)", yCol = "Longitude (WGS84)",
   precisionCol = "Coordinate uncertainty (m)", yearCol = "Year")
 }
 \arguments{

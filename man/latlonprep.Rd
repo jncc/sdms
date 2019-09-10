@@ -4,7 +4,8 @@
 \alias{latlonprep}
 \title{Prepare data from NBN Atlas for use in species distribution modelling.}
 \usage{
-latlonprep(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (WGS84)",
+latlonprep(speciesdf, xCol = "Latitude (WGS84)",
+  yCol = "Longitude (WGS84)",
   precisionCol = "Coordinate uncertainty (m)", yearCol = "Year",
   minyear = 0, maxyear = 0, mindata = 500, covarRes = 300,
   GBonly = TRUE)
