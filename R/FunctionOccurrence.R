@@ -1,9 +1,9 @@
 #' Place occurrence points at random within low-resolution grid cell
 #'
-#' This function is used to randomise the location of a presence point where the species occurrence data is low resolution. For example, if your species occurrence data is at 1km resolution, but your environmental predictor variables are at 200m resolution, this enables you to randomise where within the 1km cell your species record is placed. The function can handle multiple resolutions within a single dataframe, as long as these are labelled with a precision column.
+#' This function is used to randomise the location of a presence point where the species occurrence data is low resolution. For example, if your species occurrence data is at 1km resolution, but your environmental predictor variables are at 200m resolution, this enables you to randomise where within the 1km cell your species record is placed. The function can handle multiple resolutions within a single dataframe, as long as these are labelled with a precision column. Jittering for lat lon points is unlikely to be accurate to within 10m, consider using a projected coordinate system for high resolution data
 #'
 #' @param presframe Spatial points data frame of presence points. This should include columns titled 'easting' and 'northing', which should be x and y coordinates in metres (of the centre of the grid cell for gridded data), as well as a column giving the resolution (see \code{prescisionCol} below).
-#' @param coordsys The coordinate system used to denote location, either "latlon" for decimal latitude and longitude or "bng" for british national grid easting and northings.
+#' @param coordsys The units of the coordinate system used, either "latlon" for decimal latitude and longitude or "m" for a projected coordinate system with meter units.
 #' @param precisionCol The column indicating the resolution of the presence point data. This should be given as a grid cell size in metres e.g. for a 1km grid this should be 1000.
 #' @param lowestResm The column indicating the lowest resolution limit for the presence point data in meters. If your presence record is in a higher resolution than this limit, then it will remain at its current state.
 #' @param covarResm The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.
@@ -20,7 +20,7 @@
 #'sp::coordinates(speciesdf)<- ~ easting + northing
 #'
 #'#run the random occurrences function
-#'randomOcc(presframe = speciesdf, precisionCol = "precision", coordsys = "bng")
+#'randomOcc(presframe = speciesdf, precisionCol = "precision", coordsys = "m")
 #'
 #'Example using coordinates in latitude and longitude:
 #'#load in the data
@@ -36,41 +36,47 @@
 #'xCol = "latitude"
 #'sp::coordinates(speciesdf)<- c(yCol, xCol)
 #'#run the random occurrences function
-#'randomOcc(presframe = speciesdf, precisionCol = "precision", coordsys = "latlon")
+#'randomOcc(presframe = speciesdf, precisionCol = "precision", coordsys = "latlon", covarResm = 50)
 #'
 #' @export
 
 
 
-randomOcc <- function(presframe, coordsys = "bng",
-                      precisionCol = "precision", lowestResm = 10000,
+randomOcc <- function(presframe,
+                      coordsys = "m",
+                      precisionCol = "precision",
+                      lowestResm = 10000,
                       covarResm = 300) {
 
 
   #check coordinate system used
-  if (coordsys != "latlon" & coordsys != "bng")
+  if (coordsys != "latlon" & coordsys != "m"){
     stop("invalid coordinate system")
+  }
 
-  #deal with lat lon
-   if (coordsys == "latlon") {
-      ukgrid = "+init=epsg:27700"
-      latlong = "+init=epsg:4326"
-      sp::proj4string(presframe) <- sp::CRS(latlong)
-      presframe <- sp::spTransform(presframe, sp::CRS(ukgrid))
-      presframe <- raster::as.data.frame(presframe)
-      names(presframe)[which(names(presframe) == "longitude")] <-"easting"
-      names(presframe)[which(names(presframe) == "latitude")] <-"northing"
-   }
+  # #deal with lat lon
+  #  if (coordsys == "latlon") {
+  #     ukgrid = "+init=epsg:27700"
+  #     latlong = "+init=epsg:4326"
+  #     sp::proj4string(presframe) <- sp::CRS(latlong)
+  #     presframe <- sp::spTransform(presframe, sp::CRS(ukgrid))
+  #     presframe <- raster::as.data.frame(presframe)
+  #     names(presframe)[which(names(presframe) == "longitude")] <-"easting"
+  #     names(presframe)[which(names(presframe) == "latitude")] <-"northing"
+  #  }
 
+
+  orgCRS <- presframe@proj4string
 
   #convert from spatial to data frame
   occurrence <- data.frame()
   presframe <- raster::as.data.frame(presframe)
 
-   # Check precision column is numerical, and convert to m
+  # Check precision column is numerical, and convert to m
   if (!(precisionCol %in% colnames(presframe))){
     stop("precision column not found")
   }
+
   if (!is.numeric(presframe[[precisionCol]])) {
     presframe$res <- sub("[^[:alpha:]]+", "", presframe[[precisionCol]])
     presframe[[precisionCol]] <- as.numeric(gsub("([0-9]+).*$", "\\1",
@@ -80,42 +86,54 @@ randomOcc <- function(presframe, coordsys = "bng",
     presframe$res <- NULL
   }
 
-    for (j in unique(sort(presframe[[precisionCol]], decreasing = TRUE))) {
-      # Run per capture resolution grid size If capture resolution is within
-      # lowest resolution to use limit
-      if (j %in% presframe[[precisionCol]] & lowestResm >= j) {
-        df <- presframe[which(presframe[[precisionCol]] == j), ]  # Subset all data at same capture resolution
-        if (j > covarResm) {
-          movemax <- 0.5 * j  #Half of capture resolution grid cell size
+  for (j in unique(sort(presframe[[precisionCol]], decreasing = TRUE))) {
+    # Run per capture resolution grid size If capture resolution is within
+    # lowest resolution to use limit
+    if (j %in% presframe[[precisionCol]] & lowestResm >= j) {
+      df <- presframe[which(presframe[[precisionCol]] == j), ]  # Subset all data at same capture resolution
+      if (j > covarResm) {
+        movemax <- 0.5 * j  #Half of capture resolution grid cell size
+
+        if(coordsys=='m'){
+          df$northing <- df$northing + round(stats::runif(length(df$northing),
+                                                          -movemax, movemax))  #Move north/south by up to half capture grid cell size
           df$easting <- df$easting + round(stats::runif(length(df$easting),
                                                         -movemax, movemax))  #Move east/west by up to half capture grid cell size
-          df$northing <- df$northing + round(stats::runif(length(df$northing),
-                                                        -movemax, movemax))  #Move north/south by up to half capture grid cell size
-          occurrence <- rbind(occurrence, df)
-          message("jittering applied.")
         } else {
-          occurrence <- rbind(occurrence, df)
+          # courtesy of https://gis.stackexchange.com/a/2964
+          df$latitude <- df$latitude + stats::runif(length(df$latitude),
+                                                    -(movemax/111111), (movemax/111111))  #Move north/south by up to half capture grid cell size
+          df$longitude <- unlist(lapply(1:length(df$longitude), function(n, x, y){
+            x[n]+stats::runif(1,-(movemax/(111111*cos(y[n]*pi/180))), (movemax/(111111*cos(y[n]*pi/180))))
+          }, df$longitude, df$latitude))   #Move east/west by up to half capture grid cell size
+
         }
+
+        occurrence <- rbind(occurrence, df)
+        message("jittering applied.")
       } else {
-        occurrence <- presframe
+        occurrence <- rbind(occurrence, df)
         message("no jittering required.")
       }
+    } else {
+      occurrence <- presframe
+      message("no jittering required.")
     }
-
-  if (coordsys == "latlon") {
-    names(occurrence)[which(names(occurrence) == "easting")] <-"longitude"
-    names(occurrence)[which(names(occurrence) == "northing")] <-"latitude"
   }
 
-  if (coordsys == "bng"){
-      sp::coordinates(occurrence) <- ~easting + northing
+  # if (coordsys == "latlon") {
+  #   names(occurrence)[which(names(occurrence) == "easting")] <-"longitude"
+  #   names(occurrence)[which(names(occurrence) == "northing")] <-"latitude"
+  # }
+
+  if (coordsys == "m"){
+    sp::coordinates(occurrence) <- ~easting + northing
+    sp::proj4string(occurrence) <- orgCRS
   } else {
-        sp::coordinates(occurrence)<- ~longitude + latitude
-        sp::proj4string(occurrence) <- sp::CRS(ukgrid)
-        occurrence <- sp::spTransform(occurrence, sp::CRS(latlong))
-
+    sp::coordinates(occurrence)<- ~longitude + latitude
+    sp::proj4string(occurrence) <- orgCRS
   }
-
 
   return(occurrence)
+
 }
