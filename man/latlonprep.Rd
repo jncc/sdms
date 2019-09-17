@@ -17,7 +17,7 @@ latlonprep(speciesdf, xCol = "Latitude (WGS84)",
 
 \item{yCol}{The column name of the column in \code{speciesdf} giving the species record location as a decimal longitude.}
 
-\item{precisionCol}{The column name of the column in \code{speciesdf} denoting the precision of the species record locations. For NBNAtlas this is denoted as the "Coordinate uncertainty (m)". where denoted with km or m, this will be converted into meters.}
+\item{precisionCol}{The column name of the column in \code{speciesdf} denoting the precision of the species record locations. For NBNAtlas this is denoted as the "Coordinate uncertainty (m)". where denoted with km or m, this will be converted into meters. Where records are NA these will be kept by changing to precision =0}
 
 \item{yearCol}{The column name in \code{speciesdf} giving the year of the record.}
 

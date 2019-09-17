@@ -3,6 +3,7 @@
 export(MultiBNG)
 export(MultiLL)
 export(SDMs)
+export(SDMspar)
 export(bngprep)
 export(corrVars)
 export(latlonprep)

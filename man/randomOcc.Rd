@@ -4,13 +4,13 @@
 \alias{randomOcc}
 \title{Place occurrence points at random within low-resolution grid cell}
 \usage{
-randomOcc(presframe, coordsys = "bng", precisionCol = "precision",
+randomOcc(presframe, coordsys = "m", precisionCol = "precision",
   lowestResm = 10000, covarResm = 300)
 }
 \arguments{
 \item{presframe}{Spatial points data frame of presence points. This should include columns titled 'easting' and 'northing', which should be x and y coordinates in metres (of the centre of the grid cell for gridded data), as well as a column giving the resolution (see \code{prescisionCol} below).}
 
-\item{coordsys}{The coordinate system used to denote location, either "latlon" for decimal latitude and longitude or "bng" for british national grid easting and northings.}
+\item{coordsys}{The units of the coordinate system used, either "latlon" for decimal latitude and longitude or "m" for a projected coordinate system with meter units.}
 
 \item{precisionCol}{The column indicating the resolution of the presence point data. This should be given as a grid cell size in metres e.g. for a 1km grid this should be 1000.}
 
@@ -22,7 +22,7 @@ randomOcc(presframe, coordsys = "bng", precisionCol = "precision",
 A copy of the input dataframe \code{presframe} as a spatial points data frame, with new x and y values that place each point randomly within its grid cell.
 }
 \description{
-This function is used to randomise the location of a presence point where the species occurrence data is low resolution. For example, if your species occurrence data is at 1km resolution, but your environmental predictor variables are at 200m resolution, this enables you to randomise where within the 1km cell your species record is placed. The function can handle multiple resolutions within a single dataframe, as long as these are labelled with a precision column.
+This function is used to randomise the location of a presence point where the species occurrence data is low resolution. For example, if your species occurrence data is at 1km resolution, but your environmental predictor variables are at 200m resolution, this enables you to randomise where within the 1km cell your species record is placed. The function can handle multiple resolutions within a single dataframe, as long as these are labelled with a precision column. Jittering for lat lon points is unlikely to be accurate to within 10m, consider using a projected coordinate system for high resolution data
 }
 \examples{
 # Example using coordinates in British National Grid :
@@ -36,7 +36,7 @@ speciesdf <- bngprep(speciesdf = ng_data, bngCol = 'OSGR', datafrom = 'NBNatlas'
 sp::coordinates(speciesdf)<- ~ easting + northing
 
 #run the random occurrences function
-randomOcc(presframe = speciesdf, precisionCol = "precision", coordsys = "bng")
+randomOcc(presframe = speciesdf, precisionCol = "precision", coordsys = "m")
 
 Example using coordinates in latitude and longitude:
 #load in the data
@@ -52,6 +52,6 @@ yCol = "longitude"
 xCol = "latitude"
 sp::coordinates(speciesdf)<- c(yCol, xCol)
 #run the random occurrences function
-randomOcc(presframe = speciesdf, precisionCol = "precision", coordsys = "latlon")
+randomOcc(presframe = speciesdf, precisionCol = "precision", coordsys = "latlon", covarResm = 50)
 
 }
