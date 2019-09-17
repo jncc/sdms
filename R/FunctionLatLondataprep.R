@@ -5,7 +5,7 @@
 #'@param speciesdf Data frame exported from the NBN atlas with data for a species.
 #'@param xCol The column name of the column in \code{speciesdf} giving the species record location as a decimal latitude.
 #'@param yCol The column name of the column in \code{speciesdf} giving the species record location as a decimal longitude.
-#'@param precisionCol The column name of the column in \code{speciesdf} denoting the precision of the species record locations. For NBNAtlas this is denoted as the "Coordinate uncertainty (m)". where denoted with km or m, this will be converted into meters.
+#'@param precisionCol The column name of the column in \code{speciesdf} denoting the precision of the species record locations. For NBNAtlas this is denoted as the "Coordinate uncertainty (m)". where denoted with km or m, this will be converted into meters. Where records are NA these will be kept by changing to precision =0
 #'@param yearCol The column name in \code{speciesdf} giving the year of the record.
 #'@param minyear Numeric, the earliest year from which data should be selected. Year inclusive, data older than this will be discarded.
 #'@param maxyear Numeric, the latest year from which data should be used. Year inclusive, data newer than this will be discarded.
@@ -89,6 +89,8 @@ latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (
   } else {
     message("precisionCol numerical")
   }
+  #if precision na then keep record.
+  speciesdf[[precisionCol]][which(is.na(speciesdf[[precisionCol]]))] <- 0
 
 # find GB and Ireland
   if(GBonly==T){
