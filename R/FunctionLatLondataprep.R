@@ -12,6 +12,7 @@
 #'@param mindata The target minimum number of data points to return. If this is specified, the lowest resolution data will be discarded if there are enough higher resolution data points available to reach this target.
 #'@param covarRes The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.
 #'@param GBonly logical, TRUE if you wish to remove Northern Ireland from the records, FALSE if you wish to retain all records.
+#'@param presencecol logical, TRUE if a column is present defining whether it is a presence or absence which has been recorded, Those not noted as 'present' will be removed. FALSE is the default and will assume all data present are presence records.
 
 #'@return A copy of \code{speciesdf} as a data frame with absence data removed, subset to your year range and area of interest.
 #'@examples
@@ -25,9 +26,7 @@
 latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (WGS84)",
                        precisionCol = "Coordinate uncertainty (m)",
                        yearCol = "Year", minyear = 0, maxyear = 0, mindata = 500,
-                       covarRes = 300, GBonly = TRUE) {
-
-
+                       covarRes = 300, GBonly = TRUE,presencecol=F) {
 
   #---------------------Subset data------------------------------------------------------------#
   ### incorrect input errors
@@ -38,46 +37,37 @@ latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (
   if (maxyear != 0 & maxyear < minyear)
     stop("minimum year limit is greater than maximum year")
 
-  if (!(xCol %in% colnames(speciesdf)) | !(yCol %in% colnames(speciesdf))){
+  if (!(xCol %in% names(speciesdf)) | !(yCol %in% names(speciesdf))){
     stop("check x and y column names")
     }
-  if (!(yearCol %in% colnames(speciesdf))){
+  if (!(yearCol %in% names(speciesdf))){
     stop("year column  not found")
   }
-  if (!(precisionCol %in% colnames(speciesdf))){
+  if (!(precisionCol %in% names(speciesdf))){
     stop("precision column  not found")
   }
 
   ##--------------------------##
-
   ## remove any levels so it is just flat data to work with
   speciesdf <- droplevels(speciesdf)
-
-
   ## Data from the NBNatlas Inital clean to give only presence records,
   ## also subset records by bngCol as varying precisions for Grid
   ## References
-
-  speciesdf <- speciesdf[speciesdf$`Occurrence status` == "present",
-                         ]  # remove absence data
-
-  speciesdf <- speciesdf[grepl("[[:alnum:]]", speciesdf[[xCol]]),
-                         ]  #select rows with gridref records
-  speciesdf <- speciesdf[grepl("[[:alnum:]]", speciesdf[[yCol]]),
-                         ]  #select rows with gridref records
-
-   if (nrow(speciesdf) == 0){
+  if (presencecol==T){
+    speciesdf <- speciesdf[speciesdf[[presencecol]] == "present",]  # remove absence data
+  }
+  #only complete records
+  speciesdf <- speciesdf[grepl("[[:alnum:]]", speciesdf[[xCol]]),]  #select rows with gridref records
+  speciesdf <- speciesdf[grepl("[[:alnum:]]", speciesdf[[yCol]]),]  #select rows with gridref records
+  if (nrow(speciesdf) == 0){
     stop("no presence records found")
   }
-
-
-#rename yearCol to year
+  #rename yearCol to year
   names(speciesdf)[names(speciesdf) == yearCol] <- "year"
 
   # Extract by date - if this has been defined
   if (minyear > 0 & maxyear > 0) {
-    speciesdf <- speciesdf[which(speciesdf$year >= minyear & speciesdf$year <=
-                                   maxyear), ]  # if minyear & maxyear defined
+    speciesdf <- speciesdf[which(speciesdf$year >= minyear & speciesdf$year <=maxyear), ]  # if minyear & maxyear defined
   } else if (minyear > 0 & maxyear == 0) {
     speciesdf <- speciesdf[which(speciesdf$year >= minyear), ]  # if only minyear defined
   } else if (minyear == 0 & maxyear > 0) {
@@ -85,7 +75,6 @@ latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (
   } else {
     speciesdf <- speciesdf
   }
-
   if (nrow(speciesdf) == 0){
     stop("no presence records found within year range")
   }
@@ -93,10 +82,8 @@ latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (
   # Check precision column is numerical, and convert to m
   if (!is.numeric(speciesdf[[precisionCol]])) {
     speciesdf$res <- sub("[^[:alpha:]]+", "", speciesdf[[precisionCol]])
-    speciesdf[[precisionCol]] <- as.numeric(gsub("([0-9]+).*$", "\\1",
-                                                 speciesdf[[precisionCol]]))
-    speciesdf[[precisionCol]] <- ifelse(speciesdf$res == "m", speciesdf[[precisionCol]],
-                                        speciesdf[[precisionCol]] * 1000)
+    speciesdf[[precisionCol]] <- as.numeric(gsub("([0-9]+).*$", "\\1",speciesdf[[precisionCol]]))
+    speciesdf[[precisionCol]] <- ifelse(speciesdf$res == "km", speciesdf[[precisionCol]] * 1000,speciesdf[[precisionCol]])
     speciesdf$res <- NULL
     message("precisionCol converted to m")
   } else {
@@ -104,44 +91,34 @@ latlonprep <- function(speciesdf, xCol = "Latitude (WGS84)", yCol = "Longitude (
   }
 
 # find GB and Ireland
-  speciesdf$GB  <- NA
-
-
-  raster::rasterOptions(tmpdir = "./Rtmpdir")
-
-  GB <- raster::getData('GADM', country="gbr", level=2)
-  GB_sub <- raster::subset(GB, NAME_1 != "Northern Ireland")
-  IR_sub <- raster::subset(GB, NAME_1 == "Northern Ireland")
-
-  GBextent <- raster::extent(GB_sub)
-  IRextent <- raster::extent(IR_sub)
-
-
-  #highlight GB or Ireland
-
-  IRxmin <- IRextent@ymin
-  IRxmax <- IRextent@ymax
-  IRymin <- IRextent@xmin
-  IRymax <- IRextent@xmax
-
-  for (i in 1:nrow(speciesdf)) {
+  if(GBonly==T){
+    speciesdf$GB  <- NA
+    raster::rasterOptions(tmpdir = "./Rtmpdir")
+    GB <- raster::getData('GADM', country="gbr", level=2)
+    GB_sub <- raster::subset(GB, NAME_1 != "Northern Ireland")
+    IR_sub <- raster::subset(GB, NAME_1 == "Northern Ireland")
+    GBextent <- raster::extent(GB_sub)
+    IRextent <- raster::extent(IR_sub)
+    IRxmin <- IRextent@ymin
+    IRxmax <- IRextent@ymax
+    IRymin <- IRextent@xmin
+    IRymax <- IRextent@xmax
+    #highlight if record GB or NI
+    for (i in 1:nrow(speciesdf)) {
     if (speciesdf[[xCol]][i] >=IRxmin & speciesdf[[xCol]][i] <= IRxmax & speciesdf[[yCol]][i] >=IRymin & speciesdf[[yCol]][i] <= IRymax) {
-              speciesdf$GB[i] <- "IR"
+      speciesdf$GB[i] <- "IR"
     } else {
       speciesdf$GB[i] <- "GB"
     }
   }
   unlink("./Rtmpdir/*")
-
-
-
   #subset to GB
   if (GBonly == TRUE){
     speciesdf <- speciesdf[speciesdf$GB  == "GB",]  # subset to GB only
     message(paste(nrow(speciesdf), "occurrences after subsetting"))
-
   } else {
     message(paste(nrow(speciesdf), "occurrences after subsetting"))
+  }
   }
 
   # Remove low resolution data if sufficient data at higher resolution

@@ -8,7 +8,7 @@ latlonprep(speciesdf, xCol = "Latitude (WGS84)",
   yCol = "Longitude (WGS84)",
   precisionCol = "Coordinate uncertainty (m)", yearCol = "Year",
   minyear = 0, maxyear = 0, mindata = 500, covarRes = 300,
-  GBonly = TRUE)
+  GBonly = TRUE, presencecol = F)
 }
 \arguments{
 \item{speciesdf}{Data frame exported from the NBN atlas with data for a species.}
@@ -30,6 +30,8 @@ latlonprep(speciesdf, xCol = "Latitude (WGS84)",
 \item{covarRes}{The resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.}
 
 \item{GBonly}{logical, TRUE if you wish to remove Northern Ireland from the records, FALSE if you wish to retain all records.}
+
+\item{presencecol}{logical, TRUE if a column is present defining whether it is a presence or absence which has been recorded, Those not noted as 'present' will be removed. FALSE is the default and will assume all data present are presence records.}
 }
 \value{
 A copy of \code{speciesdf} as a data frame with absence data removed, subset to your year range and area of interest.
