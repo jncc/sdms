@@ -11,7 +11,8 @@ LazyData: true
 URL: http://github.com/hutchisonjtw/JNCCsdms
 RoxygenNote: 6.1.1
 Depends: R(>= 2.10.0)
-Imports: stringi,
+Imports: 
+    stringi,
     sp,
     rgdal,
     rgeos,
@@ -27,17 +28,20 @@ Imports: stringi,
     ff,
     ffbase,
     rnrfa,
-    pryr ,
+    pryr,
     rJava,
     glmulti,
     utils,
     ggplot2,
     dplyr,
-    raster
-Suggests: foreach,
+    raster,
+    foreach,
     doParallel,
-    testthat, 
+    parallel,
+    corrplot
+Suggests: 
+    testthat,
     knitr,
     rmarkdown,
-    kableExtra    
+    kableExtra
 VignetteBuilder: knitr
