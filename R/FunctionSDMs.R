@@ -49,7 +49,7 @@
 #'data(background)
 #'
 #'#run the species distribution models
-#'SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE, coordsys = "bng")
+#'SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE, coordsys = "m")
 #'
 #'
 #'# Example with lat lon data prep:
@@ -77,8 +77,8 @@
 
 SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
     models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
-    n_bg_points = nrow(pres_vars), prop_test_data = 0.25, covarReskm = 300,
-    max_tries = 2, lab = "species", rndm_occ = TRUE, out_flder = "Outputs/", coordsys = "bng") {
+    n_bg_points = NULL, prop_test_data = 0.25, covarReskm = 300,
+    max_tries = 2, lab = "species", rndm_occ = TRUE, out_flder = "Outputs/", precisionCol=precisionCol,coordsys = "m") {
 
     all_predicts <- NULL
     all_models <- NULL
@@ -131,7 +131,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
 
         if (rndm_occ == TRUE) {
             occurrence <- randomOcc(presframe = occ, covarResm = covarReskm,
-                                    coordsys = coordsys)
+                                    coordsys = coordsys,precisionCol=precisionCol)
             pres.pts <- as.data.frame(sp::coordinates(occurrence))
             message("Random occurrences placed.")
         } else {
@@ -164,6 +164,10 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
 
          if(nrow(pres_vars) == 0){
           stop("check projection, presence points not aligned with variables")
+        }
+
+        if(is.na(n_bg_points)){
+         n_bg_points <- nrow(pres_vars)
         }
 
         pres_vars$Presence <- 1
