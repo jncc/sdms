@@ -167,7 +167,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         }
 
         pres_vars$Presence <- 1
-        bg.pts <- dismo::randomPoints(mask = bckg, n = 1000, p = ppts,
+        bg.pts <- dismo::randomPoints(mask = bckg, n = n_bg_points, p = ppts,
             tryf = 50)
         bg_vars <- data.frame(cbind(bg.pts, raster::extract(varstack, bg.pts)))
         bg_vars <- bg_vars[stats::complete.cases(bg_vars), ]  #Remove any NA lines
