@@ -156,7 +156,7 @@ To run the models call the SDMs() function and the outputs will be returned at y
 
 ```{r }
 
-SDMs(occ = occurrence, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE, models = c("RF", "GLM"), out_flder = "Outputs/")
+SDMs(occ = occurrence, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE, models = c("RF", "GLM"), out_flder = "Outputs/",precisionCol = "precision")
 
 ```
 

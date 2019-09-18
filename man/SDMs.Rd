@@ -6,7 +6,7 @@
 \usage{
 SDMs(occ = occurrence, bckg = NULL, varstack = vars,
   models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
-  n_bg_points = NULL, prop_test_data = 0.25, covarReskm = 300,
+  n_bg_points = NULL, prop_test_data = 0.25, covarResm = 300,
   max_tries = 2, lab = "species", rndm_occ = TRUE,
   out_flder = "Outputs/", precisionCol = precisionCol,
   coordsys = "m")
@@ -24,7 +24,7 @@ SDMs(occ = occurrence, bckg = NULL, varstack = vars,
 
 \item{prop_test_data}{Numeric, the proportion of data to keep back as testing data for evaluating the models. Default is 25\%.}
 
-\item{covarReskm}{Numeric, the resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.}
+\item{covarResm}{Numeric, the resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.}
 
 \item{max_tries}{Numeric, the numbers of times the model is run.}
 
@@ -98,6 +98,6 @@ latlong = "+init=epsg:4326"
 vars = raster::projectRaster(vars, crs = latlong)
 
 #run the model
-SDMs(occ = speciesdf, bckg = NULL, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = FALSE, coordsys = "latlon",precisionCol="Coordinate uncertainty in metres")
+SDMs(occ = speciesdf, bckg = NULL, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = FALSE, coordsys = "latlon",precisionCol="precision")
 
 }

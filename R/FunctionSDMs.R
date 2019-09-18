@@ -8,7 +8,7 @@
 #' @param models A character vector of the models to run and evaluate. This should be at least one of \code{'MaxEnt'}, \code{'BioClim'}, \code{'SVM'}, \code{'RF'}, \code{'GLM'}, \code{'GAM'}, \code{'BRT'}. Default is to run all models.
 #' @param n_bg_points The number of pseudo-absence point to attempt to generate. Note that if a very restrictive mask is used the number actually generated may be fewer than that specified. Default is to attempt to generate the same number of pseudo-absences as presences for which there is data on the environmental parameters (this may be fewer than the number of points in \code{occ} if some of these fall in cells that are NA in one or more layers in \code{varstack}.
 #' @param prop_test_data Numeric, the proportion of data to keep back as testing data for evaluating the models. Default is 25\%.
-#' @param covarReskm Numeric, the resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.
+#' @param covarResm Numeric, the resolution of the environmental covariate data layers, in metres. Data will not be discarded if it is of higher resolution than the environmental covariate layers.
 #' @param max_tries Numeric, the numbers of times the model is run.
 #' @param lab The name of the output files.
 #' @param rndm_occ Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.
@@ -71,13 +71,13 @@
 #'vars = raster::projectRaster(vars, crs = latlong)
 #'
 #'#run the model
-#'SDMs(occ = speciesdf, bckg = NULL, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = FALSE, coordsys = "latlon",precisionCol="Coordinate uncertainty in metres")
+#'SDMs(occ = speciesdf, bckg = NULL, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = FALSE, coordsys = "latlon",precisionCol="precision")
 #'
 #' @export
 
 SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
     models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
-    n_bg_points = NULL, prop_test_data = 0.25, covarReskm = 300,
+    n_bg_points = NULL, prop_test_data = 0.25, covarResm = 300,
     max_tries = 2, lab = "species", rndm_occ = TRUE, out_flder = "Outputs/", precisionCol=precisionCol,coordsys = "m") {
 
     all_predicts <- NULL
@@ -130,7 +130,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         #---------------------generate random occurrences ---------------------------------------------#
 
         if (rndm_occ == TRUE) {
-            occurrence <- randomOcc(presframe = occ, covarResm = covarReskm,
+            occurrence <- randomOcc(presframe = occ, covarResm = covarResm,
                                     coordsys = coordsys,precisionCol=precisionCol)
             pres.pts <- as.data.frame(sp::coordinates(occurrence))
             message("Random occurrences placed.")
@@ -399,7 +399,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
 
         # Add function to return only presence observations as raster if model
         # evaluation is low
-        Obs2ras <- function(points, raskm = covarReskm) {
+        Obs2ras <- function(points, raskm = covarResm) {
             # nr <- 1250 / raskm nc <- 700 / raskm r <- raster::raster(nrows = nr,
             # ncols = nc, xmn = 0, xmx= 700000, ymn = 0, ymx = 1250000)
             r <- varstack[[1]]

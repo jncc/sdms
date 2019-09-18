@@ -173,7 +173,7 @@ MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_f
       }
 
       ## run SDM function
-      final_out <- SDMs(occ = spdat, varstack = vars, models = models,prop_test_data = prop_test_data, covarReskm = covarRes,max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, out_flder = out_flder, bckg = background,  coordsys = "latlon",precisionCol="precision")
+      final_out <- SDMs(occ = spdat, varstack = vars, models = models,prop_test_data = prop_test_data, covarResm = covarRes,max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, out_flder = out_flder, bckg = background,  coordsys = "latlon",precisionCol="precision")
       message(paste(sp, " modelling completed."))
       print("Overall runtime:")
       print(ptm <- proc.time())
@@ -226,7 +226,7 @@ MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_f
 
       ## run SDM function
       final_out <- SDMs(occ = spdat, varstack = vars, models = models,
-                        prop_test_data = prop_test_data, covarReskm = covarRes,
+                        prop_test_data = prop_test_data, covarResm = covarRes,
                         max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, bckg = background, out_flder = out_flder,  coordsys = "latlon", precisionCol="precision")
       ptm <- proc.time()
 
