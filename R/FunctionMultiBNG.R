@@ -63,21 +63,15 @@
 #'@export
 
 
-MultiBNG <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
-    bkgd_flder, vars, max_tries = 1, datafrom = "NBNatlas",
-    minyear = 0, maxyear = 0, mindata = 5000, covarRes = 300, models = c("MaxEnt",
-        "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"), prop_test_data = 0.25,
-    bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE) {
-
-
+MultiBNG <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,bkgd_flder, vars, max_tries = 1, datafrom = "NBNatlas",
+    minyear = 0, maxyear = 0, mindata = 5000, covarRes = 300, models = c("MaxEnt","BioClim", "SVM", "RF", "GLM", "GAM", "BRT"), prop_test_data = 0.25,bngCol = "OSGR", mult_prssr = FALSE, rndm_occ = TRUE) {
 
     alreadyDone <- NULL
     sp_found <- 0
     sp_missing <- NULL
-
     ptm <- proc.time()
 
-    ### input checks
+    ####---------------- input checks-----------------------------####
     for (i in 1:length(sp_list)) {
         sp <- sp_list[i]
         if  (file.exists(paste(dat_flder, sp,".csv", sep = ""))) {
@@ -96,14 +90,13 @@ MultiBNG <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
         print(sp)
       }
     }
-
     if (sp_found == 0) {
       stop("No species found. Check input data folder and file formats.")
     }
     if (datafrom != "NBNatlas" & datafrom != "NBNgateway"){
       stop("datafrom not specified as NBNatlas or NBNgateway. Modelling terminated.")
       }
-    ## ------------------ setting up done list -----------------------## If
+    #### ------------------ setting up done list -----------------------####
     if (any(duplicated(sp_list)) == TRUE) {
       sp_list <- unique(sp_list)
       message("Duplicate species removed.")
@@ -131,8 +124,7 @@ MultiBNG <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
       stop("No more species to process. Modelling terminated.")
     }
 
-    ## ------------------ setting up multiple processors
-    ## -----------------------##
+    #### ------------------ setting up multiple processors -----------------------####
 
     ## setup parallel backend to use multiple processors if required
     if (mult_prssr == TRUE) {
@@ -148,14 +140,12 @@ MultiBNG <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
     ptm <- proc.time()
 
 
-    ## ------------------ run models (non-parallel processing)
-    ## -----------------------##
+    #### ------------------ run models (non-parallel processing) -----------------------####
     if (mult_prssr == FALSE) {
         for (i in 1:length(sp_list)) {
             # use if running one at a time
             sp <- sp_list[i]
             lab <- gsub("([[:punct:]])|\\s+", "_", sp)
-
             # read in and prepare species occurrence data
             if (datafrom == "NBNgatway") {
                 gateway_dat <- readr::read_delim(file = paste(dat_flder,
@@ -183,7 +173,6 @@ MultiBNG <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
             }
 
             #try to load the background
-
              load_obj <- function(f)
             {
               env <- new.env()
@@ -192,7 +181,6 @@ MultiBNG <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
              }
 
             bkgd_name <-  paste(bkgd_flder, taxon, sep = "")
-
             background <- tryCatch(load_obj(bkgd_name), error = function(err) NA)
 
             if (exists("background")) {
@@ -204,12 +192,8 @@ MultiBNG <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
                 rm(r)
                 print("Unable to obtain background mask from folder. This has been generated from the vars layer.")
             }
-
-
             ## run SDM function
-            final_out <- SDMs(occ = spdat, varstack = vars, models = models,
-                prop_test_data = prop_test_data, covarReskm = covarRes,
-                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, out_flder = out_flder, bckg = background, coordsys = "bng")
+            final_out <- SDMs(occ = spdat, varstack = vars, models = models, prop_test_data = prop_test_data, covarReskm = covarRes, max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, out_flder = out_flder, bckg = background, coordsys = "m",precisionCol = "precision")
             message(paste(sp, " modelling completed."))
             print("Overall runtime:")
             print(ptm <- proc.time())
@@ -218,30 +202,20 @@ MultiBNG <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
         }
     }
 
-    ## ------------------ run models (parallel processing)
-    ## -----------------------##
+    #### ------------------ run models (parallel processing) -----------------------####
     if (mult_prssr == TRUE) {
         foreach(i = 1:length(sp_list), .packages = packlist) %dopar% {
-            # use if using parallel cores
+          # use if using parallel cores
+          sp <- sp_list[i]
+          lab <- gsub("([[:punct:]])|\\s+", "_", sp)
 
-            sp <- sp_list[i]
-            lab <- gsub("([[:punct:]])|\\s+", "_", sp)
-
-            # read in and prepare species occurrence data
-            if (datafrom == "NBNgatway") {
-                gateway_dat <- readr::read_delim(file = paste(dat_flder,
-                  sp, ".txt", sep = ""), "\t", escape_double = FALSE,
-                  trim_ws = TRUE)
-                spdat <- bngprep(speciesdf = gateway_dat, precisionCol = "precision",
-                  bngCol = bngCol, mindata = mindata, minyear = minyear,
-                  maxyear = maxyear, covarRes = coverRes)
+          # read in and prepare species occurrence data
+          if (datafrom == "NBNgatway") {
+            gateway_dat <- readr::read_delim(file = paste(dat_flder,sp, ".txt", sep = ""), "\t", escape_double = FALSE, trim_ws = TRUE)
+            spdat <- bngprep(speciesdf = gateway_dat, precisionCol = "precision",bngCol = bngCol, mindata = mindata, minyear = minyear, maxyear = maxyear, covarRes = coverRes)
             } else if (datafrom == "NBNatlas") {
-                atlas_dat <- utils::read.csv(file = paste(dat_flder, sp,
-                  ".csv", sep = ""), header = TRUE, sep = ",", check.names = FALSE,
-                  strip.white = TRUE)
-                spdat <- bngprep(speciesdf = atlas_dat, datafrom = datafrom,
-                  mindata = mindata, minyear = minyear, maxyear = maxyear,
-                  covarRes = covarRes, bngCol = bngCol)
+                atlas_dat <- utils::read.csv(file = paste(dat_flder, sp, ".csv", sep = ""), header = TRUE, sep = ",", check.names = FALSE,strip.white = TRUE)
+                spdat <- bngprep(speciesdf = atlas_dat, datafrom = datafrom,mindata = mindata, minyear = minyear, maxyear = maxyear, covarRes = covarRes, bngCol = bngCol)
             }
             # convert to spatial data frame
             sp::coordinates(spdat) <- ~easting + northing
@@ -254,16 +228,13 @@ MultiBNG <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
             }
 
             #try to load the background
-
             load_obj <- function(f)
             {
               env <- new.env()
               nm <- load(f, env)[1]
               env[[nm]]
             }
-
             bkgd_name <-  paste(bkgd_flder, taxon, sep = "")
-
             background <- tryCatch(load_obj(bkgd_name), error = function(err) NA)
 
             if (exists("background")) {
@@ -275,14 +246,9 @@ MultiBNG <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder,
               rm(r)
               print("Unable to obtain background mask from folder. This has been generated from the vars layer.")
             }
-
-
             ## run SDM function
-            final_out <- SDMs(occ = spdat, varstack = vars, models = models,
-                prop_test_data = prop_test_data, covarReskm = covarRes,
-                max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, bckg = background, out_flder = out_flder, coordsys = "bng")
+            final_out <- SDMs(occ = spdat, varstack = vars, models = models,prop_test_data = prop_test_data, covarReskm = covarRes,max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, bckg = background, out_flder = out_flder, coordsys = "m",precisionCol = "precision")
             ptm <- proc.time()
-
             # stop cluster if parrallel processing
             parallel::stopCluster(cl)
             message("Parallel clustering off.")

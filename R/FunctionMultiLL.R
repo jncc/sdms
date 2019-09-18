@@ -60,7 +60,6 @@
 
 MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_flder, vars, max_tries = 1,minyear = 0, maxyear = 0, mindata = 5000, covarRes = 300, models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"), prop_test_data = 0.25, mult_prssr = FALSE, rndm_occ = TRUE, GBonly = TRUE, xCol = "Latitude (WGS84)", yCol = "Longitude (WGS84)", precisionCol = "Coordinate uncertainty (m)", yearCol = "Year") {
 
-
   alreadyDone <- NULL
   sp_found <- 0
   sp_missing <- NULL
@@ -91,7 +90,7 @@ MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_f
     stop("No species found. Check input data folder and file formats.")
   }
 
-  ## ------------------ setting up done list -----------------------## If
+  #### ------------------ setting up done list -----------------------####
   if (any(duplicated(sp_list)) == TRUE) {
     sp_list <- unique(sp_list)
     message("Duplicate species removed.")
@@ -105,10 +104,7 @@ MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_f
         file.exists(paste(out_flder, sp, max_tries, ".grd", sep = "")) |
         file.exists(paste(out_flder, sp, max_tries, ".tif", sep = ""))) {
       alreadyDone <- append(alreadyDone, sp)
-    } else if (file.exists(paste(out_flder, lab, max_tries, ".csv",
-                                 sep = "")) & file.exists(paste(out_flder, lab, max_tries,
-                                                                ".grd", sep = "")) | file.exists(paste(out_flder, lab, max_tries,
-                                                                                                       ".tif", sep = ""))) {
+    } else if (file.exists(paste(out_flder, lab, max_tries, ".csv",sep = "")) & file.exists(paste(out_flder, lab, max_tries,".grd", sep = "")) | file.exists(paste(out_flder, lab, max_tries, ".tif", sep = ""))) {
       alreadyDone <- append(alreadyDone, sp)
     }
   }
@@ -119,12 +115,11 @@ MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_f
     stop("No more species to process. Modelling terminated.")
   }
 
-  ## ------------------ setting up multiple processors
-  ## -----------------------##
+  #### ------------------ setting up multiple processors -----------------------####
 
   ## setup parallel backend to use multiple processors if required
   if (mult_prssr == TRUE) {
-    cl <- parallel::makeCluster(detectCores() - 1)  #not to overload your computer
+    cl <- parallel::makeCluster(parallel::detectCores() - 1)  #not to overload your computer
     doParallel::registerDoParallel(cl)
     parallel::clusterEvalQ(cl, .libPaths("D:/Rpackages"))  #guide each to libpath, as above (line 13)
     packlist <- c("stringi", "rgdal", "raster", "rgeos", "dismo",
@@ -136,8 +131,7 @@ MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_f
   ptm <- proc.time()
 
 
-  ## ------------------ run models (non-parallel processing)
-  ## -----------------------##
+  #### ------------------ run models (non-parallel processing) -----------------------####
   if (mult_prssr == FALSE) {
     for (i in 1:length(sp_list)) {
       # use if running one at a time
@@ -145,18 +139,11 @@ MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_f
       lab <- gsub("([[:punct:]])|\\s+", "_", sp)
 
       # read in and prepare species occurrence data
-
-        atlas_dat <- utils::read.csv(file = paste(dat_flder, sp,
-                                                  ".csv", sep = ""), header = TRUE, sep = ",", check.names = FALSE,
-                                     strip.white = TRUE)
-
-        spdat<- latlonprep(atlas_dat, xCol = xCol, yCol = yCol,
-                           precisionCol = precisionCol,
-                                yearCol = yearCol, minyear = 2000, maxyear = 2007, mindata = 500,
-                               covarRes = 300, GBonly = TRUE)
+      atlas_dat <- utils::read.csv(file = paste(dat_flder, sp,".csv", sep = ""), header = TRUE, sep = ",", check.names = FALSE,strip.white = TRUE)
+      spdat<- latlonprep(atlas_dat, xCol = xCol, yCol = yCol,precisionCol = precisionCol, yearCol = yearCol, minyear = minyear, maxyear = maxyear, mindata = mindata,covarRes = covarRes, GBonly = GBonly)
 
       # convert to spatial data frame
-        sp::coordinates(spdat)<- ~longitude + latitude
+      sp::coordinates(spdat)<- ~longitude + latitude
 
       # Create background
       if ("taxonGroup" %in% names(spdat)) {
@@ -166,7 +153,6 @@ MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_f
       }
 
       #try to load the background
-
       load_obj <- function(f)
       {
         env <- new.env()
@@ -175,9 +161,7 @@ MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_f
       }
 
       bkgd_name <-  paste(bkgd_flder, taxon, sep = "")
-
       background <- tryCatch(load_obj(bkgd_name), error = function(err) NA)
-
       if (exists("background")) {
         print("Background mask found.")
       } else {
@@ -188,38 +172,25 @@ MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_f
         print("Unable to obtain background mask from folder. This has been generated from the vars layer.")
       }
 
-
       ## run SDM function
-      final_out <- SDMs(occ = spdat, varstack = vars, models = models,
-                        prop_test_data = prop_test_data, covarReskm = covarRes,
-                        max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, out_flder = out_flder, bckg = background,  coordsys = "latlon")
+      final_out <- SDMs(occ = spdat, varstack = vars, models = models,prop_test_data = prop_test_data, covarReskm = covarRes,max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, out_flder = out_flder, bckg = background,  coordsys = "latlon",precisionCol="precision")
       message(paste(sp, " modelling completed."))
       print("Overall runtime:")
       print(ptm <- proc.time())
       beepr::beep()
-
     }
   }
 
-  ## ------------------ run models (parallel processing)
-  ## -----------------------##
+  #### ------------------ run models (parallel processing) -----------------------####
   if (mult_prssr == TRUE) {
     foreach(i = 1:length(sp_list), .packages = packlist) %dopar% {
       # use if using parallel cores
-
       sp <- sp_list[i]
       lab <- gsub("([[:punct:]])|\\s+", "_", sp)
 
       # read in and prepare species occurrence data
-
-      atlas_dat <- utils::read.csv(file = paste(dat_flder, sp,
-                                                ".csv", sep = ""), header = TRUE, sep = ",", check.names = FALSE,
-                                   strip.white = TRUE)
-
-      spdat<- latlonprep(atlas_dat, xCol = xCol, yCol = yCol,
-                         precisionCol = precisionCol,
-                         yearCol = yearCol, minyear = 2000, maxyear = 2007, mindata = 500,
-                         covarRes = 300, GBonly = TRUE)
+      atlas_dat <- utils::read.csv(file = paste(dat_flder, sp,".csv", sep = ""), header = TRUE, sep = ",", check.names = FALSE,strip.white = TRUE)
+      spdat<- latlonprep(atlas_dat, xCol = xCol, yCol = yCol, precisionCol = precisionCol, yearCol = yearCol, minyear = minyear, maxyear = maxyear, mindata = mindata,covarRes = covarRes, GBonly = GBonly)
 
       # convert to spatial data frame
       sp::coordinates(spdat)<- ~longitude + latitude
@@ -241,7 +212,6 @@ MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_f
       }
 
       bkgd_name <-  paste(bkgd_flder, taxon, sep = "")
-
       background <- tryCatch(load_obj(bkgd_name), error = function(err) NA)
 
       if (exists("background")) {
@@ -254,11 +224,10 @@ MultiLL <- function(sp_list = sp_list, out_flder = "Outputs/", dat_flder, bkgd_f
         print("Unable to obtain background mask from folder. This has been generated from the vars layer.")
       }
 
-
       ## run SDM function
       final_out <- SDMs(occ = spdat, varstack = vars, models = models,
                         prop_test_data = prop_test_data, covarReskm = covarRes,
-                        max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, bckg = background, out_flder = out_flder,  coordsys = "latlon")
+                        max_tries = max_tries, lab = sp, rndm_occ = rndm_occ, bckg = background, out_flder = out_flder,  coordsys = "latlon", precisionCol="precision")
       ptm <- proc.time()
 
       # stop cluster if parrallel processing
