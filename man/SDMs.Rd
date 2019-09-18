@@ -76,7 +76,7 @@ vars <- raster::projectRaster(bio, crs="+init=epsg:27700")
 data(background)
 
 #run the species distribution models
-SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE, coordsys = "m")
+SDMs(occ = occurrence, bckg = background, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = TRUE, coordsys = "m", precisionCol = "precision")
 
 
 # Example with lat lon data prep:
@@ -84,7 +84,7 @@ data(ng_data)
 names(ng_data)[26] <- "Decimal longitude (WGS84)"
 
 #preparing the data
-speciesdf <- latlonprep(speciesdf = ng_data, xCol = "Decimal latitude (WGS84)", yCol = "Decimal longitude (WGS84)", precisionCol = "Coordinate uncertainty in metres", yearCol = "Year", minyear = 2000, maxyear = 2007, GBonly = TRUE)
+speciesdf <- latlonprep(speciesdf = ng_data, xCol = "Decimal latitude (WGS84)", yCol = "Decimal longitude (WGS84)", precisionCol = "Coordinate uncertainty in metres", yearCol = "Year", minyear = 2000, maxyear = 2007, GBonly = FALSE)
 
 #convert to spatial points data frame
 names(speciesdf)
@@ -98,6 +98,6 @@ latlong = "+init=epsg:4326"
 vars = raster::projectRaster(vars, crs = latlong)
 
 #run the model
-SDMs(occ = speciesdf, bckg = NULL, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = FALSE, coordsys = "latlon")
+SDMs(occ = speciesdf, bckg = NULL, varstack = vars, max_tries = 2, lab = 'species', rndm_occ = FALSE, coordsys = "latlon",precisionCol="Coordinate uncertainty in metres")
 
 }
