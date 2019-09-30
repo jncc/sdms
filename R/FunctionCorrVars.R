@@ -55,7 +55,7 @@ corrVars <- function(vars, na.rm = T, method = 'color', order = 'hclust', title 
 
   plt <- corrplot::corrplot(corr = temp$`pearson correlation coefficient`, type = 'lower', method = 'color',
                             diag = F, outline = T, order = order, tl.col = 'black',
-                            title = title, mar=c(0,0,3,0))
+                            title = title, mar=c(0,0,3,0), is.corr = F)
 
   return(plt)
 }
