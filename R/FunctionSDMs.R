@@ -14,6 +14,7 @@
 #' @param rndm_occ Logical, Default is TRUE and will randomise the locations of presence points where the species occurrence data is low resolution, through calling the randomOcc function.
 #' @param out_flder The location of the output folder for your models.
 #' @param coordsys The coordinate system used to denote location, either "latlon" for decimal latitude and longitude or "bng" for british national grid easting and northings.
+#' #' @param dropvars parameter to drop variables where running GAMs.
 #' @return A list containing the prediction from the best model (as a raster layer showing probability of species occurrence), the best model evaluation and the best model itself.
 #' @examples
 #'# Example using BNG data prep:
@@ -78,7 +79,7 @@
 SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
     models = c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT"),
     n_bg_points = NULL, prop_test_data = 0.25, covarResm = 300,
-    max_tries = 2, lab = "species", rndm_occ = TRUE, out_flder = "Outputs/", precisionCol=precisionCol,coordsys = "m") {
+    max_tries = 2, lab = "species", rndm_occ = TRUE, out_flder = "Outputs/", precisionCol=precisionCol,coordsys = "m",dropVars=F) {
 
     all_predicts <- NULL
     all_models <- NULL
@@ -197,6 +198,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
         combo_train <- rbind(presence_train, bg_train)
         # Drop variables with fewer than 12 unique values (minimum required
         # for GAM)
+        if (dropVars==T){
         lowunique <- NULL
         for (i in 1:(raster::ncol(combo_train) - 1)) {
             p <- length(unique(combo_train[, i]))
@@ -209,6 +211,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
             combo_train <- combo_train[, !(colnames(combo_train) %in%
                 lowunique)]  #'[[<-'(combo_train, lowunique, value = NULL)
             vars_drop <- raster::dropLayer(varstack, lowunique)
+        }
         } else {
             vars_drop <- varstack
         }
