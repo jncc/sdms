@@ -112,6 +112,7 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
 
     while (tries < max_tries) {
         raster::rasterOptions(tmpdir = "./Rtmpdir")
+      options("fftempdir"="./Rtmpdir/")
 
     accepted_models <- c("MaxEnt", "BioClim", "SVM", "RF", "GLM", "GAM", "BRT")
     if (all(models %in% accepted_models) ==FALSE) stop("Model specification contains an unexpected value, please check model names input. Operation terminated.")
