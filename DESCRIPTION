@@ -8,7 +8,7 @@ Description: This package provides several functions for species distribution mo
 License: Open Government License v3.0
 Encoding: UTF-8
 LazyData: true
-URL: http://github.com/hutchisonjtw/JNCCsdms
+URL: https://github.com/jncc/sdms
 RoxygenNote: 6.1.1
 Depends: R(>= 2.10.0)
 Imports: 
