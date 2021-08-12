@@ -412,9 +412,11 @@ SDMs <- function(occ = occurrence, bckg = NULL, varstack = vars,
 
         # Project to entire region (GB)
         bestmod <- tryCatch(get(best), error = function(err) NA)
-        prediction_best <- tryCatch(raster::predict(vars_drop, bestmod,
-            type = "response"), error = function(err) Obs2ras(ppts[c("x",
-            "y")]))
+        if(best=="BRT"){
+          prediction_best <- tryCatch(raster::predict(vars_drop, bestmod, n.trees = bestmod$n.trees, type = "response"), error = function(err) Obs2ras(ppts[c("x", "y")]))
+        } else {
+          prediction_best <- tryCatch(raster::predict(vars_drop, bestmod, type = "response"), error = function(err) Obs2ras(ppts[c("x", "y")]))
+        }
 
         # Convert raster output to ff matrix to reduce object size
         predict_ff <- ff::ff(raster::as.matrix(prediction_best))
